@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # StreakQuest - Habit Tracking Application
 
 StreakQuest is an interactive habit tracking application that helps users build and maintain consistent habits through visual tracking, analytics, and achievement rewards.
@@ -50,3 +51,6 @@ MIT License
 ## Contact
 
 Created by Sanskar Agrawal - 2023
+=======
+# StreakQuest
+>>>>>>> 2e27447b4d873e83986d8f61b4230c512c3f9f07
