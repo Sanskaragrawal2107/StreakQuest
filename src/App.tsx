@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
@@ -19,19 +19,18 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 const AppContent: React.FC = () => {
   const { darkMode } = useTheme();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  // For demo purposes, we'll consider the user logged in if they're on an app route
-  const isAppRoute = window.location.pathname !== '/landing';
   
   return (
     <Router>
       <Routes>
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="*" element={
+        {/* Landing Page at the root */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Main application routes nested under /app */}
+        <Route path="/app/*" element={ 
           <div className={`flex min-h-screen ${darkMode ? 'dark' : ''}`}>
             <Sidebar />
-            <div className={`flex-1 transition-colors duration-300 ${
+            <div className={`flex-1 transition-colors duration-300 ${ 
               darkMode 
                 ? 'bg-gray-900 text-gray-100' 
                 : 'bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 text-gray-900'
@@ -39,19 +38,26 @@ const AppContent: React.FC = () => {
               <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 md:px-8">
                 <MobileNav />
                 <AnimatePresence mode="wait">
+                  {/* Nested routes specific to the /app path */}
                   <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/calendar" element={<Calendar />} />
-                    <Route path="/achievements" element={<Achievements />} />
-                    <Route path="/stats" element={<Stats />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    {/* Redirect base /app to /app/dashboard */}
+                    <Route path="/" element={<Navigate to="/app/dashboard" replace />} /> 
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="calendar" element={<Calendar />} />
+                    <Route path="achievements" element={<Achievements />} />
+                    <Route path="stats" element={<Stats />} />
+                    <Route path="settings" element={<Settings />} />
+                    {/* Catch-all within /app redirects to dashboard */}
+                    <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
                   </Routes>
                 </AnimatePresence>
               </div>
             </div>
           </div>
         } />
+
+        {/* Optional: A general catch-all to redirect unknown top-level paths to landing */}
+        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
       </Routes>
     </Router>
   );

@@ -9,11 +9,11 @@ const Sidebar: React.FC = () => {
   const { darkMode, toggleDarkMode } = useTheme();
   
   const navItems = [
-    { path: '/', icon: <FaHome size={20} />, label: 'Dashboard' },
-    { path: '/calendar', icon: <FaCalendarAlt size={20} />, label: 'Calendar' },
-    { path: '/achievements', icon: <FaTrophy size={20} />, label: 'Achievements' },
-    { path: '/stats', icon: <FaChartBar size={20} />, label: 'Statistics' },
-    { path: '/settings', icon: <FaCog size={20} />, label: 'Settings' },
+    { path: '/app/dashboard', icon: <FaHome size={20} />, label: 'Dashboard' },
+    { path: '/app/calendar', icon: <FaCalendarAlt size={20} />, label: 'Calendar' },
+    { path: '/app/achievements', icon: <FaTrophy size={20} />, label: 'Achievements' },
+    { path: '/app/stats', icon: <FaChartBar size={20} />, label: 'Statistics' },
+    { path: '/app/settings', icon: <FaCog size={20} />, label: 'Settings' },
   ];
 
   return (

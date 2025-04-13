@@ -94,8 +94,8 @@ const LandingPage: React.FC = () => {
     localStorage.setItem('streakquest_demo_login', 'true');
     // Close the modal
     setShowLoginModal(false);
-    // Navigate to the app dashboard
-    window.location.href = '/dashboard';
+    // Navigate to the app dashboard with updated path
+    window.location.href = '/app/dashboard';
   };
 
   // Define the features array to fix the map error
