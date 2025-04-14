@@ -14,17 +14,38 @@ import LandingPage from './pages/LandingPage';
 import Sidebar from './components/layout/Sidebar';
 import MobileNav from './components/layout/MobileNav';
 
-// Import ThemeProvider
+// Import ThemeProvider and TutorialProvider
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { TutorialProvider } from './contexts/TutorialContext';
+
+// Handle signup - store flag and redirect to dashboard
+const SignupHandler: React.FC = () => {
+  React.useEffect(() => {
+    localStorage.setItem('streakquest_demo_login', 'true');
+    localStorage.setItem('demo_status', 'working');
+    localStorage.setItem('streakquest_signup_flow', 'true');
+    
+    // This will run once on component mount
+    window.location.replace(process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/app/dashboard` : '/app/dashboard');
+  }, []);
+  
+  return <div className="flex items-center justify-center h-screen">Redirecting to your dashboard...</div>;
+};
 
 const AppContent: React.FC = () => {
   const { darkMode } = useTheme();
   
+  // Get the base URL from environment if available (for production builds)
+  const basename = process.env.PUBLIC_URL || '';
+  
   return (
-    <Router>
+    <Router basename={basename}>
       <Routes>
         {/* Landing Page at the root */}
         <Route path="/" element={<LandingPage />} />
+        
+        {/* Signup route that redirects to the dashboard */}
+        <Route path="/signup" element={<SignupHandler />} />
         
         {/* Main application routes nested under /app */}
         <Route path="/app/*" element={ 
@@ -56,8 +77,8 @@ const AppContent: React.FC = () => {
           </div>
         } />
 
-        {/* Optional: A general catch-all to redirect unknown top-level paths to landing */}
-        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+        {/* General catch-all to redirect unknown paths to landing */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
@@ -66,7 +87,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ThemeProvider>
-      <AppContent />
+      <TutorialProvider>
+        <AppContent />
+      </TutorialProvider>
     </ThemeProvider>
   );
 };

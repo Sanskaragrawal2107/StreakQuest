@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlus, FaCheckCircle, FaCalendarAlt } from 'react-icons/fa';
+import { FaPlus, FaCheckCircle, FaCalendarAlt, FaQuestionCircle } from 'react-icons/fa';
 import HabitCard from '../components/habits/HabitCard';
 import HabitForm from '../components/habits/HabitForm';
 import ProgressRing from '../components/ui/ProgressRing';
 import { useHabits } from '../hooks/useHabits';
-import { getUserStats } from '../utils/localStorage';
+import { getUserStats, UserStats } from '../utils/localStorage';
 import { Toaster } from 'react-hot-toast';
 import { useTheme } from '../contexts/ThemeContext';
+import { useTutorial } from '../contexts/TutorialContext';
+import Tutorial from '../components/tutorial/Tutorial';
 
 const Dashboard: React.FC = () => {
   const {
@@ -23,9 +25,17 @@ const Dashboard: React.FC = () => {
     handleHabitFormSubmit,
   } = useHabits();
   const { darkMode } = useTheme();
+  const { 
+    openTutorial,
+  } = useTutorial();
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'today'>('today');
-  const stats = getUserStats();
+  const [stats, setStats] = useState<UserStats>(getUserStats());
+
+  useEffect(() => {
+    console.log("[Dashboard] Habits changed, updating stats...");
+    setStats(getUserStats());
+  }, [habits]);
 
   // Filter habits based on activeFilter
   const filteredHabits = habits.filter(habit => {
@@ -54,9 +64,15 @@ const Dashboard: React.FC = () => {
   const defaultCompletionHistory: Record<string, number> = {};
   const defaultFrequency = ['monday', 'wednesday', 'friday']; // Default frequency if missing
 
+  // --- Badge Logic (Example) ---
+  // This is a placeholder. You'd replace this with actual badge logic based on stats or achievements.
+  const nextBadgeThreshold = 10; // Example: next badge at 10 day streak
+  const daysUntilNextBadge = Math.max(0, nextBadgeThreshold - stats.currentStreak);
+
   return (
     <div>
       <Toaster position="top-right" />
+      <Tutorial />
       
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -72,7 +88,16 @@ const Dashboard: React.FC = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
+          className="flex items-center"
         >
+          <button 
+            onClick={openTutorial} 
+            className="mr-2 p-2 rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+            aria-label="Show tutorial"
+            title="Show tutorial"
+          >
+            <FaQuestionCircle />
+          </button>
           <button 
             onClick={openCreateHabitForm}
             className="btn btn-primary flex items-center mt-4 md:mt-0"
@@ -84,53 +109,71 @@ const Dashboard: React.FC = () => {
       </div>
       
       {/* Stats Overview */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
-      >
-        {/* Today's Progress */}
-        <div className="card flex items-center">
-          <ProgressRing 
-            progress={completionRate} 
-            size={70} 
-            strokeWidth={7}
-            className="mr-4"
-          />
-          <div>
-            <h3 className="font-semibold text-neutral-700">Today's Progress</h3>
-            <p className="text-2xl font-bold text-primary-600">
-              {completedHabits.length}/{filteredHabits.length}
-            </p>
-            <p className="text-xs text-neutral-500">tasks completed</p>
+      {habits.length === 0 && !loading && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 mb-6 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 text-sm space-y-1"
+        >
+          <p>📊 Statistics like progress, streak, and weekly rate will appear here once you add and start completing habits.</p>
+          <p>❓ Click the <FaQuestionCircle className="inline -mt-0.5 mx-0.5" /> icon in the header to see the tutorial again.</p>
+          <p>☀️/🌙 Click the sun/moon icon in the header to switch between light and dark themes.</p>
+        </motion.div>
+      )}
+      {habits.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
+        >
+          {/* Today's Progress */}
+          <div className="card flex items-center">
+            <ProgressRing 
+              progress={completionRate} 
+              size={70} 
+              strokeWidth={7}
+              className="mr-4"
+            />
+            <div>
+              <h3 className="font-semibold text-neutral-700">Today's Progress</h3>
+              <p className="text-2xl font-bold text-primary-600">
+                {completedHabits.length}/{filteredHabits.length}
+              </p>
+              <p className="text-xs text-neutral-500">tasks completed</p>
+            </div>
           </div>
-        </div>
-        
-        {/* Current Streak */}
-        <div className="card flex items-center">
-          <div className="w-16 h-16 rounded-full bg-accent-50 flex items-center justify-center mr-4">
-            <FaCheckCircle className="text-2xl text-accent-500" />
+          
+          {/* Current Streak */}
+          <div className="card flex items-center">
+            <div className="w-16 h-16 rounded-full bg-accent-50 flex items-center justify-center mr-4">
+              <FaCheckCircle className="text-2xl text-accent-500" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-neutral-700">Current Streak</h3>
+              <p className="text-2xl font-bold text-accent-600">{stats.currentStreak} days</p>
+              {daysUntilNextBadge > 0 && (
+                <p className="text-xs text-neutral-500">{daysUntilNextBadge} days until next badge!</p>
+              )}
+              {daysUntilNextBadge === 0 && stats.currentStreak > 0 && (
+                 <p className="text-xs text-green-500">Badge threshold reached!</p>
+              )}
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-neutral-700">Current Streak</h3>
-            <p className="text-2xl font-bold text-accent-600">{stats.currentStreak} days</p>
-            <p className="text-xs text-neutral-500">keep it up!</p>
+          
+          {/* Weekly Completion */}
+          <div className="card flex items-center">
+            <div className="w-16 h-16 rounded-full bg-secondary-50 flex items-center justify-center mr-4">
+              <FaCalendarAlt className="text-2xl text-secondary-500" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-neutral-700">Weekly Rate</h3>
+              <p className="text-2xl font-bold text-secondary-600">{Math.round(stats.weeklyCompletionRate)}%</p>
+              <p className="text-xs text-neutral-500">completion rate</p>
+            </div>
           </div>
-        </div>
-        
-        {/* Weekly Completion */}
-        <div className="card flex items-center">
-          <div className="w-16 h-16 rounded-full bg-secondary-50 flex items-center justify-center mr-4">
-            <FaCalendarAlt className="text-2xl text-secondary-500" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-neutral-700">Weekly Rate</h3>
-            <p className="text-2xl font-bold text-secondary-600">{Math.round(stats.weeklyCompletionRate)}%</p>
-            <p className="text-xs text-neutral-500">completion rate</p>
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
       
       {/* Filter Tabs */}
       <div className="flex mb-4 border-b border-neutral-200">
@@ -155,6 +198,17 @@ const Dashboard: React.FC = () => {
           All Habits
         </button>
       </div>
+      
+      {/* Informational note about the 'Today' filter */}
+      {habits.length > 0 && activeFilter === 'today' && pendingHabits.length === 0 && completedHabits.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 mb-6 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-sm"
+        >
+          <p>ℹ️ The "Today" view only shows habits scheduled for <span className="font-semibold">{new Date().toLocaleDateString('en-US', { weekday: 'long' })}</span>. Check the "All Habits" tab to see everything.</p>
+        </motion.div>
+      )}
       
       {/* Empty State */}
       {!loading && habits.length === 0 && (

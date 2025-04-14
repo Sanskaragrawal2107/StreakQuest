@@ -92,10 +92,13 @@ const LandingPage: React.FC = () => {
     e.preventDefault();
     // Set a flag in localStorage to indicate the user has logged in
     localStorage.setItem('streakquest_demo_login', 'true');
+    // Add success note
+    localStorage.setItem('demo_status', 'working');
     // Close the modal
     setShowLoginModal(false);
-    // Navigate to the app dashboard with updated path
-    window.location.href = '/app/dashboard';
+    // Use path with PUBLIC_URL if available for deployments
+    const basePath = process.env.PUBLIC_URL || '';
+    window.location.replace(`${basePath}/app/dashboard`);
   };
 
   // Define the features array to fix the map error
@@ -1314,12 +1317,14 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
   // Get reference to parent component's handleDemo function
   const showLoginModal = () => {
     if (typeof window !== 'undefined') {
-      // We'll access the parent component's handleDemo function via context or props
-      // For now, we'll use a workaround to trigger the login modal
-      const demoLoginButton = document.querySelector('[data-demo-button="true"]') as HTMLButtonElement;
-      if (demoLoginButton) {
-        demoLoginButton.click();
-      }
+      // Instead of triggering the demo button, we'll replicate its behavior directly
+      // Set flags in localStorage
+      localStorage.setItem('streakquest_demo_login', 'true');
+      localStorage.setItem('demo_status', 'working');
+      
+      // Navigate to dashboard directly - this is more reliable on mobile
+      const basePath = process.env.PUBLIC_URL || '';
+      window.location.replace(`${basePath}/app/dashboard`);
     }
   };
   

@@ -40,10 +40,12 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
     <script>
-      // Redirect to landing page on first visit
+      // Properly handle first-time visits
+      // The issue was the landing page route doesn't exist as "/landing"
       if (window.location.pathname === '/' && !localStorage.getItem('streakquest_visited')) {
         localStorage.setItem('streakquest_visited', 'true');
-        window.location.href = '/landing';
+        // The LandingPage component is actually at the root path in your App.tsx
+        // So we don't need to redirect
       }
     </script>
   </body>

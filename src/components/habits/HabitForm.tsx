@@ -109,10 +109,19 @@ const HabitForm: React.FC<HabitFormProps> = ({
   // Handle dailyTarget change
   const handleDailyTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    setFormValues({
-      ...formValues,
-      dailyTarget: isNaN(value) || value < 1 ? 1 : value > 10 ? 10 : value
-    });
+    // Only update if it's a valid number between 1 and 10
+    // If field is empty (during typing), keep the current value without auto-converting to 10
+    if (e.target.value === '') {
+      setFormValues({
+        ...formValues,
+        dailyTarget: undefined // Allow empty field during typing
+      });
+    } else if (!isNaN(value)) {
+      setFormValues({
+        ...formValues,
+        dailyTarget: value < 1 ? 1 : value > 10 ? 10 : value
+      });
+    }
   };
 
   return (
@@ -247,13 +256,22 @@ const HabitForm: React.FC<HabitFormProps> = ({
                   type="number"
                   min="1"
                   max="10"
-                  value={formValues.dailyTarget}
+                  value={formValues.dailyTarget === undefined ? '' : formValues.dailyTarget}
                   onChange={handleDailyTargetChange}
                   className={`w-full px-3 py-2 border rounded-md ${
                     darkMode 
                       ? 'bg-gray-800 border-gray-700 text-white' 
                       : 'bg-white border-gray-300 text-gray-900'
                   }`}
+                  onBlur={() => {
+                    // When field loses focus, ensure there's a valid value
+                    if (formValues.dailyTarget === undefined) {
+                      setFormValues({
+                        ...formValues,
+                        dailyTarget: 1
+                      });
+                    }
+                  }}
                 />
                 <div className="ml-2 text-sm font-medium text-indigo-500">
                   {formValues.dailyTarget === 1 
