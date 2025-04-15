@@ -80,8 +80,8 @@ const Dashboard: React.FC = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl font-bold text-neutral-800">Dashboard</h1>
-          <p className="text-neutral-500">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Dashboard</h1>
+          <p className={darkMode ? 'text-gray-400' : 'text-[#FF9D76]'}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         </motion.div>
         
         <motion.div 
@@ -92,7 +92,7 @@ const Dashboard: React.FC = () => {
         >
           <button 
             onClick={openTutorial} 
-            className="mr-2 p-2 rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+            className={`mr-2 p-2 rounded-full ${darkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-[#FF9D76] hover:bg-[#FFF0E8]'} transition-colors`}
             aria-label="Show tutorial"
             title="Show tutorial"
           >
@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
           </button>
           <button 
             onClick={openCreateHabitForm}
-            className="btn btn-primary flex items-center mt-4 md:mt-0"
+            className={`px-4 py-2 rounded-lg transition-all duration-200 font-medium flex items-center mt-4 md:mt-0 ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-[#FF9D76] hover:bg-[#FF8A5B] text-white'}`}
           >
             <FaPlus className="mr-2" />
             <span>New Habit</span>
@@ -113,7 +113,7 @@ const Dashboard: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 mb-6 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 text-sm space-y-1"
+          className={`p-4 mb-6 rounded-lg text-sm space-y-1 ${darkMode ? 'bg-indigo-900/30 text-indigo-300' : 'bg-[#FFF0E8] text-[#FF8A5B]'}`}
         >
           <p>📊 Statistics like progress, streak, and weekly rate will appear here once you add and start completing habits.</p>
           <p>❓ Click the <FaQuestionCircle className="inline -mt-0.5 mx-0.5" /> icon in the header to see the tutorial again.</p>
@@ -128,32 +128,34 @@ const Dashboard: React.FC = () => {
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
         >
           {/* Today's Progress */}
-          <div className="card flex items-center">
+          <div className={`p-5 rounded-xl border shadow-sm transition-colors duration-300 flex items-center ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-[#FFDBCB]/30 shadow-[0_4px_12px_rgba(255,157,118,0.08)]'}`}>
             <ProgressRing 
               progress={completionRate} 
               size={70} 
               strokeWidth={7}
               className="mr-4"
+              color={darkMode ? '#818cf8' : '#FF9D76'}
+              bgColor={darkMode ? '#374151' : '#FFF0E8'}
             />
             <div>
-              <h3 className="font-semibold text-neutral-700">Today's Progress</h3>
-              <p className="text-2xl font-bold text-primary-600">
+              <h3 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-slate-700'}`}>Today's Progress</h3>
+              <p className={`text-2xl font-bold ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'}`}>
                 {completedHabits.length}/{filteredHabits.length}
               </p>
-              <p className="text-xs text-neutral-500">tasks completed</p>
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>tasks completed</p>
             </div>
           </div>
           
           {/* Current Streak */}
-          <div className="card flex items-center">
-            <div className="w-16 h-16 rounded-full bg-accent-50 flex items-center justify-center mr-4">
-              <FaCheckCircle className="text-2xl text-accent-500" />
+          <div className={`p-5 rounded-xl border shadow-sm transition-colors duration-300 flex items-center ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-[#FFDBCB]/30 shadow-[0_4px_12px_rgba(255,157,118,0.08)]'}`}>
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mr-4 ${darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-[#FFF0E8] text-[#FF9D76]'}`}>
+              <FaCheckCircle className="text-2xl" />
             </div>
             <div>
-              <h3 className="font-semibold text-neutral-700">Current Streak</h3>
-              <p className="text-2xl font-bold text-accent-600">{stats.currentStreak} days</p>
+              <h3 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-slate-700'}`}>Current Streak</h3>
+              <p className={`text-2xl font-bold ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'}`}>{stats.currentStreak} days</p>
               {daysUntilNextBadge > 0 && (
-                <p className="text-xs text-neutral-500">{daysUntilNextBadge} days until next badge!</p>
+                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>{daysUntilNextBadge} days until next badge!</p>
               )}
               {daysUntilNextBadge === 0 && stats.currentStreak > 0 && (
                  <p className="text-xs text-green-500">Badge threshold reached!</p>
@@ -162,27 +164,31 @@ const Dashboard: React.FC = () => {
           </div>
           
           {/* Weekly Completion */}
-          <div className="card flex items-center">
-            <div className="w-16 h-16 rounded-full bg-secondary-50 flex items-center justify-center mr-4">
-              <FaCalendarAlt className="text-2xl text-secondary-500" />
+          <div className={`p-5 rounded-xl border shadow-sm transition-colors duration-300 flex items-center ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-[#FFDBCB]/30 shadow-[0_4px_12px_rgba(255,157,118,0.08)]'}`}>
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mr-4 ${darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-[#FFF0E8] text-[#FF9D76]'}`}>
+              <FaCalendarAlt className="text-2xl" />
             </div>
             <div>
-              <h3 className="font-semibold text-neutral-700">Weekly Rate</h3>
-              <p className="text-2xl font-bold text-secondary-600">{Math.round(stats.weeklyCompletionRate)}%</p>
-              <p className="text-xs text-neutral-500">completion rate</p>
+              <h3 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-slate-700'}`}>Weekly Rate</h3>
+              <p className={`text-2xl font-bold ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'}`}>{Math.round(stats.weeklyCompletionRate)}%</p>
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>completion rate</p>
             </div>
           </div>
         </motion.div>
       )}
       
       {/* Filter Tabs */}
-      <div className="flex mb-4 border-b border-neutral-200">
+      <div className={`flex mb-4 border-b ${darkMode ? 'border-gray-700' : 'border-[#FFDBCB]/30'}`}>
         <button 
           onClick={() => setActiveFilter('today')}
           className={`px-4 py-2 font-medium ${
             activeFilter === 'today' 
-              ? 'text-primary-600 border-b-2 border-primary-500' 
-              : 'text-neutral-500 hover:text-neutral-700'
+              ? darkMode
+                ? 'text-indigo-400 border-b-2 border-indigo-500'
+                : 'text-[#FF9D76] border-b-2 border-[#FF9D76]'
+              : darkMode
+                ? 'text-gray-400 hover:text-gray-300'
+                : 'text-slate-500 hover:text-slate-700'
           }`}
         >
           Today
@@ -191,8 +197,12 @@ const Dashboard: React.FC = () => {
           onClick={() => setActiveFilter('all')}
           className={`px-4 py-2 font-medium ${
             activeFilter === 'all' 
-              ? 'text-primary-600 border-b-2 border-primary-500' 
-              : 'text-neutral-500 hover:text-neutral-700'
+              ? darkMode
+                ? 'text-indigo-400 border-b-2 border-indigo-500'
+                : 'text-[#FF9D76] border-b-2 border-[#FF9D76]'
+              : darkMode
+                ? 'text-gray-400 hover:text-gray-300'
+                : 'text-slate-500 hover:text-slate-700'
           }`}
         >
           All Habits
@@ -204,7 +214,7 @@ const Dashboard: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 mb-6 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-sm"
+          className={`p-4 mb-6 rounded-lg text-sm ${darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700'}`}
         >
           <p>ℹ️ The "Today" view only shows habits scheduled for <span className="font-semibold">{new Date().toLocaleDateString('en-US', { weekday: 'long' })}</span>. Check the "All Habits" tab to see everything.</p>
         </motion.div>
@@ -215,16 +225,16 @@ const Dashboard: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="card text-center py-10"
+          className={`p-5 rounded-xl border shadow-sm transition-colors duration-300 text-center py-10 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-[#FFDBCB]/30 shadow-[0_4px_12px_rgba(255,157,118,0.08)]'}`}
         >
-          <div className="bg-neutral-100 w-20 h-20 rounded-full flex items-center justify-center text-neutral-400 mx-auto mb-4">
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-[#FFF0E8] text-[#FF9D76]'}`}>
             <FaPlus size={24} />
           </div>
-          <h3 className="text-lg font-semibold text-neutral-700 mb-2">No habits yet</h3>
-          <p className="text-neutral-500 mb-4">Create your first habit to get started on your journey</p>
+          <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-slate-700'}`}>No habits yet</h3>
+          <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>Create your first habit to get started on your journey</p>
           <button 
             onClick={openCreateHabitForm}
-            className="btn btn-primary inline-flex items-center"
+            className={`px-4 py-2 rounded-lg transition-all duration-200 font-medium inline-flex items-center ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-[#FF9D76] hover:bg-[#FF8A5B] text-white'}`}
           >
             <FaPlus className="mr-2" />
             <span>New Habit</span>
@@ -238,7 +248,7 @@ const Dashboard: React.FC = () => {
           {/* Pending Habits */}
           {pendingHabits.length > 0 && (
             <div>
-              <h2 className="font-medium text-neutral-700 mb-3">To Complete</h2>
+              <h2 className={`font-medium mb-3 ${darkMode ? 'text-gray-200' : 'text-slate-700'}`}>To Complete</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <AnimatePresence>
                   {pendingHabits.map(habit => (
@@ -248,17 +258,17 @@ const Dashboard: React.FC = () => {
                       name={habit.name}
                       category={habit.category}
                       streak={habit.streak}
-                      completed={false}
-                      color={habit.color}
-                      goal={habit.goal}
+                      icon={habit.icon || ''}
                       progress={habit.progress}
-                      lastCompleted={habit.lastCompleted ? new Date(habit.lastCompleted) : undefined}
-                      onComplete={markHabitComplete}
-                      onEdit={() => openEditHabitForm(habit)}
-                      onDelete={removeHabit}
-                      completionHistory={habit.completionHistory || defaultCompletionHistory}
+                      goal={habit.goal}
+                      unit={habit.unit || ''}
                       frequency={habit.frequency || defaultFrequency}
+                      completionHistory={habit.completionHistory || defaultCompletionHistory}
+                      onComplete={markHabitComplete}
+                      onEdit={openEditHabitForm}
+                      onDelete={removeHabit}
                       darkMode={darkMode}
+                      color={habit.color}
                       dailyTarget={habit.dailyTarget || 1}
                     />
                   ))}
@@ -270,7 +280,7 @@ const Dashboard: React.FC = () => {
           {/* Completed Habits */}
           {completedHabits.length > 0 && (
             <div>
-              <h2 className="font-medium text-neutral-700 mb-3">Completed</h2>
+              <h2 className={`font-medium mb-3 ${darkMode ? 'text-gray-200' : 'text-slate-700'}`}>Completed</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <AnimatePresence>
                   {completedHabits.map(habit => (
@@ -280,18 +290,19 @@ const Dashboard: React.FC = () => {
                       name={habit.name}
                       category={habit.category}
                       streak={habit.streak}
-                      completed={true}
-                      color={habit.color}
-                      goal={habit.goal}
+                      icon={habit.icon || ''}
                       progress={habit.progress}
-                      lastCompleted={habit.lastCompleted ? new Date(habit.lastCompleted) : undefined}
-                      onComplete={markHabitComplete}
-                      onEdit={() => openEditHabitForm(habit)}
-                      onDelete={removeHabit}
-                      completionHistory={habit.completionHistory || defaultCompletionHistory}
+                      goal={habit.goal}
+                      unit={habit.unit || ''}
                       frequency={habit.frequency || defaultFrequency}
+                      completionHistory={habit.completionHistory || defaultCompletionHistory}
+                      onComplete={markHabitComplete}
+                      onEdit={openEditHabitForm}
+                      onDelete={removeHabit}
                       darkMode={darkMode}
+                      color={habit.color}
                       dailyTarget={habit.dailyTarget || 1}
+                      completed={true}
                     />
                   ))}
                 </AnimatePresence>
@@ -304,10 +315,11 @@ const Dashboard: React.FC = () => {
       {/* Habit Form Modal */}
       <AnimatePresence>
         {showHabitForm && (
-          <HabitForm
-            initialData={editingHabit || undefined}
+          <HabitForm 
             onClose={closeHabitForm}
             onSubmit={handleHabitFormSubmit}
+            editingHabit={editingHabit}
+            darkMode={darkMode}
           />
         )}
       </AnimatePresence>

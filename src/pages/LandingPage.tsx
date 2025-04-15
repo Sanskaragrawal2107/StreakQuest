@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { FaChartLine, FaCalendarAlt, FaTrophy, FaMoon, FaSun, FaGithub, FaFire, FaBrain, FaRunning, FaBook, FaWater, FaRocket } from 'react-icons/fa';
+import { FaChartLine, FaCalendarAlt, FaTrophy, FaMoon, FaSun, FaGithub, FaFire, FaBrain, FaRunning, FaBook, FaWater, FaRocket, FaTwitter, FaFacebook, FaInstagram } from 'react-icons/fa';
 import { useTheme } from '../contexts/ThemeContext';
 
 // Hero images
@@ -51,22 +51,353 @@ const GradientText: React.FC<{ text: string }> = ({ text }) => (
   </span>
 );
 
+// Add the missing ScrollingHabitJourney component before the LandingPage component
+const ScrollingHabitJourney: React.FC<ScrollingHabitJourneyProps> = ({ darkMode }) => {
+  const [currentDay, setCurrentDay] = useState(0);
+  const [streakCount, setStreakCount] = useState(0);
+  const [completedHabits, setCompletedHabits] = useState<number[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+  
+  // Animation controls for each habit day
+  const controls = useAnimation();
+  
+  // Use scroll position to control animation
+  useEffect(() => {
+    scrollYProgress.onChange(value => {
+      // Map scroll progress to days (1-30)
+      const newDay = Math.min(30, Math.floor(value * 40));
+      if (newDay !== currentDay) {
+        setCurrentDay(newDay);
+        
+        // Simulate habit completion based on day
+        if (newDay > 0 && !completedHabits.includes(newDay)) {
+          // 70% chance to complete the habit
+          if (Math.random() < 0.7) {
+            setCompletedHabits(prev => [...prev, newDay]);
+            setStreakCount(prev => prev + 1);
+            
+            // Animate the day being completed
+            controls.start({
+              scale: [1, 1.2, 1],
+              transition: { duration: 0.3 }
+            });
+          } else {
+            // Break the streak
+            setStreakCount(0);
+          }
+        }
+      }
+    });
+  }, [scrollYProgress, currentDay, completedHabits, controls]);
+  
+  // Text colors based on theme
+  const textColor = darkMode ? 'text-white' : 'text-slate-800';
+  const subtextColor = darkMode ? 'text-gray-300' : 'text-slate-500';
+  
+  // Define a function to generate sparkles with random positions
+  const HabitSparkles = () => (
+    <>
+      {Array.from({ length: 5 }).map((_, index) => {
+        const topPosition = Math.random() * 100;
+        const leftPosition = Math.random() * 100;
+        const size = 5 + Math.random() * 10;
+        const delay = Math.random() * 2;
+        const duration = 1 + Math.random() * 2;
+        
+        return (
+          <motion.div
+            key={index}
+            className={`absolute w-${Math.round(size)} h-${Math.round(size)} rounded-full ${darkMode ? 'bg-indigo-400' : 'bg-[#FF9D76]'} opacity-70`}
+            style={{ top: `${topPosition}%`, left: `${leftPosition}%` }}
+            animate={{
+              scale: [0, 1, 0],
+              opacity: [0, 0.7, 0]
+            }}
+            transition={{
+              repeat: Infinity,
+              repeatType: "loop",
+              duration: duration,
+              delay: delay,
+              ease: "easeInOut"
+            }}
+          />
+        );
+      })}
+    </>
+  );
+  
+  return (
+    <div ref={containerRef} className="min-h-[150vh] relative">
+      <div className="sticky top-32 py-12">
+        <div className="text-center mb-16">
+          <div className={`inline-block px-4 py-1.5 rounded-full ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'} text-sm font-medium mb-4`}>
+            Visualize Your Growth
+          </div>
+          <h2 className={`text-3xl md:text-4xl font-bold ${textColor} mb-6`}>
+            Your Habit Journey
+          </h2>
+          <p className={`max-w-2xl mx-auto text-lg ${subtextColor}`}>
+            Watch how small daily actions compound over time into remarkable results
+          </p>
+        </div>
+        
+        <div className="max-w-4xl mx-auto relative overflow-hidden">
+          {/* Habit Visualization */}
+          <div className="bg-gradient-to-b from-transparent via-transparent to-transparent relative rounded-xl p-8">
+            {/* Current Day Indicator */}
+            <div className="mb-12 flex justify-between items-center">
+              <div className={`text-lg font-medium ${textColor}`}>
+                Day <span className="text-3xl font-bold">{currentDay}</span> of 30
+              </div>
+              <div className={`px-4 py-2 rounded-full ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'}`}>
+                Streak: {streakCount} days
+              </div>
+            </div>
+            
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-3 mb-12">
+              {Array.from({ length: 30 }).map((_, index) => {
+                const day = index + 1;
+                const isCompleted = completedHabits.includes(day);
+                const isCurrentDay = day === currentDay;
+                
+                return (
+                  <motion.div
+                    key={day}
+                    animate={isCurrentDay ? controls : {}}
+                    className={`relative aspect-square rounded-lg flex items-center justify-center text-sm sm:text-base font-medium transition-all ${
+                      isCompleted
+                        ? darkMode 
+                          ? 'bg-indigo-900/50 border border-indigo-700 text-indigo-300' 
+                          : 'bg-[#FFF0E8] border border-[#FFBEA7] text-[#FF9D76]'
+                        : darkMode
+                          ? 'bg-gray-800 border border-gray-700 text-gray-400'
+                          : 'bg-slate-50 border border-slate-200/60 text-slate-400'
+                    } ${
+                      isCurrentDay 
+                        ? 'ring-2 ring-offset-2 ' + (darkMode ? 'ring-indigo-500' : 'ring-[#FF9D76]')
+                        : ''
+                    }`}
+                  >
+                    {day}
+                    {isCompleted && (
+                      <div className="absolute -top-1 -right-1">
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                            darkMode ? 'bg-indigo-500 text-white' : 'bg-[#FF9D76] text-white'
+                          }`}
+                        >
+                          ✓
+                        </motion.div>
+                      </div>
+                    )}
+                    {isCurrentDay && <HabitSparkles />}
+                  </motion.div>
+                );
+              })}
+            </div>
+            
+            {/* Growth Visualization */}
+            <div className="h-64 relative mb-8">
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-200/50 dark:bg-gray-700/50"></div>
+              
+              {/* Progress Bars */}
+              <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between h-full px-3">
+                {Array.from({ length: 30 }).map((_, index) => {
+                  const day = index + 1;
+                  // Calculate height based on completed habits and current day
+                  const baseHeight = 10; // Minimum height
+                  const completedBonus = completedHabits.includes(day) ? 40 : 0;
+                  const streakBonus = (completedHabits.includes(day) ? streakCount : 0) * 2;
+                  const pastDayBonus = day <= currentDay ? 30 : 0;
+                  
+                  // Combine all factors for total height (as a percentage)
+                  let totalHeight = Math.min(100, baseHeight + completedBonus + streakBonus + pastDayBonus);
+                  
+                  // If day is beyond current day, show minimal bar
+                  if (day > currentDay) {
+                    totalHeight = baseHeight;
+                  }
+                  
+                  return (
+                    <motion.div
+                      key={day}
+                      initial={{ height: 0 }}
+                      animate={{ height: `${totalHeight}%` }}
+                      transition={{ 
+                        duration: 0.5, 
+                        delay: day > currentDay ? 0 : 0.1,
+                        ease: "easeOut"
+                      }}
+                      className={`w-[2%] min-w-[8px] rounded-t-sm ${
+                        completedHabits.includes(day)
+                          ? darkMode 
+                            ? 'bg-gradient-to-t from-indigo-600 to-indigo-400' 
+                            : 'bg-gradient-to-t from-[#FF9D76] to-[#FFBEA7]'
+                          : darkMode
+                            ? 'bg-gray-700'
+                            : 'bg-slate-300/70'
+                      }`}
+                    >
+                      {day === currentDay && (
+                        <motion.div
+                          className="absolute -top-5 left-1/2 transform -translate-x-1/2 whitespace-nowrap"
+                          animate={{
+                            y: [0, -5, 0],
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 2,
+                          }}
+                        >
+                          <div className={`px-2 py-1 rounded-md text-xs ${
+                            darkMode 
+                              ? 'bg-indigo-900/90 text-indigo-300' 
+                              : 'bg-[#FFF0E8] text-[#FF9D76]'
+                          }`}>
+                            You are here
+                          </div>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+              
+              {/* Growth Indicator */}
+              {currentDay > 5 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="absolute top-5 left-0 right-0 flex justify-center"
+                >
+                  <div className={`px-4 py-2 rounded-lg ${
+                    darkMode ? 'bg-gray-800 text-indigo-300' : 'bg-white text-[#FF9D76]'
+                  } shadow-lg`}>
+                    <div className="font-bold text-xl">+{Math.floor(completedHabits.length * 3.5)}% Growth</div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
+                      Based on your habit consistency
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+            
+            {/* Scroll Indicator */}
+            <div className="text-center">
+              <motion.div
+                animate={{
+                  y: [0, 10, 0],
+                }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 2,
+                }}
+                className={`inline-flex items-center ${subtextColor}`}
+              >
+                <span className="mr-2 text-sm">Scroll to continue your journey</span>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                  <path d="M19 9L12 16L5 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const LandingPage: React.FC = () => {
-  // Restore the useTheme hook instead of the local state
   const { darkMode, toggleDarkMode } = useTheme();
   const [email, setEmail] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Improve dark mode styling for better appearance
-  const bgColor = darkMode ? 'bg-gray-900' : 'bg-white';
-  const textColor = darkMode ? 'text-white' : 'text-gray-900';
-  const subtextColor = darkMode ? 'text-gray-300' : 'text-gray-600';
-  const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
+  // Refined theme-aware variables inspired by the Dribbble design
+  const bgColor = darkMode ? 'bg-gray-900' : 'bg-[#f5f5fa]'; // Light lavender background
+  const textColor = darkMode ? 'text-white' : 'text-slate-800';
+  const subtextColor = darkMode ? 'text-gray-300' : 'text-slate-500';
+  const borderColor = darkMode ? 'border-gray-700' : 'border-slate-200/60';
   const cardBgColor = darkMode ? 'bg-gray-800' : 'bg-white';
-  const inputBgColor = darkMode ? 'bg-gray-800' : 'bg-gray-50';
-  const inputBorderColor = darkMode ? 'border-gray-700' : 'border-gray-300';
-  const inputTextColor = darkMode ? 'text-white' : 'text-gray-900';
+  const inputBgColor = darkMode ? 'bg-gray-800' : 'bg-white';
+  const inputBorderColor = darkMode ? 'border-gray-700' : 'border-slate-200/60';
+  const inputTextColor = darkMode ? 'text-white' : 'text-slate-900';
   const buttonHoverColor = darkMode ? 'hover:bg-indigo-600' : 'hover:bg-indigo-700';
+  const themeToggleHoverColor = darkMode ? 'hover:bg-gray-800' : 'hover:bg-slate-100';
+  const navBgColor = darkMode ? 'bg-gray-900/90 backdrop-blur-md border-b border-gray-800' : 'bg-white/90 backdrop-blur-md shadow-sm';
+  const navIconBgColor = darkMode ? 'bg-indigo-900' : 'bg-indigo-100';
+  const navTextColor = darkMode ? 'text-white' : 'text-slate-700';
+  const heroSubtextColor = darkMode ? 'text-gray-200' : 'text-slate-500';
+  const accentColor = darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'; // Peachy accent color from image
+  const featureCardBg = darkMode ? 'bg-gray-800/50' : 'bg-white';
+  const featureCardHoverBg = darkMode ? 'hover:bg-gray-800/80' : 'hover:shadow-lg hover:translate-y-[-4px]';
+  const featureCardIconBg = darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'; // Light peach from image
+  const featureCardDescColor = darkMode ? 'text-gray-300' : 'text-slate-500';
+  const featureIconColor = darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'; // Peachy accent
+  const calendarDayBgColor = darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-slate-50/80 border border-slate-100/90'; // Softer calendar days
+  const calendarHeaderColor = darkMode ? 'text-gray-400' : 'text-slate-500';
+  const progressBgColor = darkMode ? 'bg-gray-700' : 'bg-slate-200/90'; // Softer progress bar bg
+  const interactiveBadgeBg = darkMode ? 'bg-indigo-900/30 border border-indigo-800/50' : 'bg-indigo-50/80 border border-indigo-100/90'; // Softer badge bg
+  const interactiveBadgeTextColor = darkMode ? 'text-gray-400' : 'text-slate-600';
+  const sectionBgColor = darkMode ? 'bg-gray-800/30' : 'bg-white';
+  const showcaseFrameBg = darkMode ? 'bg-gray-800' : 'bg-slate-100/90'; // Slightly softer frame
+  const showcaseHeaderBg = darkMode ? 'bg-gray-900' : 'bg-slate-200/80';
+  const showcaseCardBg = darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white shadow-sm border border-slate-100/80'; // Add subtle border/shadow
+  const showcaseCardHeaderBg = darkMode ? 'border-gray-700 text-gray-300' : 'border-slate-200/80 text-slate-500';
+  const matrixContainerBg = darkMode ? 'bg-gray-900/40 rounded-xl p-6' : 'bg-slate-50/30 rounded-xl p-6'; // Add subtle bg for light mode
+  const matrixControlButtonBg = darkMode ? 'bg-gray-800 text-gray-200 shadow-glow-gray' : 'bg-slate-200 text-slate-700';
+  const matrixControlActiveBg = darkMode ? 'bg-indigo-800 text-indigo-100 shadow-glow-indigo' : 'bg-indigo-100 text-indigo-700';
+  const matrixControlTextColor = darkMode ? 'text-gray-300' : 'text-slate-500';
+  const matrixLineColor = darkMode ? 'bg-indigo-600/40' : 'bg-slate-300/80'; // Softer line
+  const matrixLineOpacity = darkMode ? 0.5 : 0.4;
+  const matrixHoverNodeBg = darkMode ? 'bg-gray-800 border border-gray-700 text-white' : 'bg-white border border-slate-200/90 text-slate-800';
+  const matrixHoverNodeDescColor = darkMode ? 'text-gray-300' : 'text-slate-600';
+  const simulatorSectionBg = darkMode ? 'bg-gray-800/30' : 'bg-gradient-to-br from-indigo-50/60 via-purple-50/40 to-white'; // Softer gradient
+  const simulatorContainerBg = darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-slate-200/90';
+  const simulatorHeaderBorder = darkMode ? 'border-gray-800' : 'border-slate-200/90';
+  const simulatorParamLabelColor = darkMode ? 'text-gray-300' : 'text-slate-700';
+  const simulatorParamValueColor = darkMode ? 'text-gray-400' : 'text-slate-500';
+  const simulatorRangeBg = darkMode ? 'bg-gray-700' : 'bg-slate-200/90';
+  const simulatorRangeAccent = darkMode ? '#818cf8' : '#6366f1';
+  const simulatorRangeDifficultyAccent = darkMode ? '#f87171' : '#ef4444';
+  const simulatorDescColor = darkMode ? 'text-gray-500' : 'text-slate-500';
+  const simulatorButtonDisabledBg = darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-200 text-slate-400';
+  const simulatorResetButtonBg = darkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-slate-200 hover:bg-slate-300 text-slate-700';
+  const simulatorProgressTextColor = darkMode ? 'text-gray-400' : 'text-slate-600';
+  const simulatorStatsCardBg = darkMode ? 'bg-gray-800' : 'bg-slate-50/90'; // Slightly softer
+  const simulatorStatsLabelColor = darkMode ? 'text-gray-400' : 'text-slate-500';
+  const simulatorStatsValueColor = darkMode ? 'text-gray-500' : 'text-slate-600';
+  const simulatorTimelineBg = darkMode ? 'bg-gray-800' : 'bg-slate-50/90';
+  const simulatorTimelineHeaderBorder = darkMode ? 'border-gray-700' : 'border-slate-200/90';
+  const simulatorTimelineDayColor = darkMode ? 'text-gray-500' : 'text-slate-600';
+  const simulatorGridLineColor = darkMode ? 'bg-gray-700' : 'bg-slate-300/70'; // Softer grid
+  const simulatorGridLabelColor = darkMode ? 'text-gray-500' : 'text-slate-500';
+  const simulatorStrengthGradientStart = darkMode ? '#818cf8' : '#6366f1';
+  const simulatorStrengthGradientEnd = darkMode ? '#d946ef' : '#c026d3';
+  const simulatorInsightsBg = darkMode ? 'border-gray-800 bg-indigo-900/10' : 'border-slate-200/90 bg-indigo-50/70'; // Softer insight bg
+  const simulatorInsightsTextColor = darkMode ? 'text-gray-300' : 'text-slate-700';
+  const simulatorInsightCardBg = darkMode ? 'bg-gray-800' : 'bg-white/80';
+  const simulatorInsightDescColor = darkMode ? 'text-gray-400' : 'text-slate-600';
+  const simulatorDemoButtonGradient = darkMode ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700' : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600';
+  const simulatorNoteColor = darkMode ? 'text-green-400' : 'text-green-600';
+  const ctaSectionBg = darkMode ? 'bg-gray-900' : 'bg-indigo-50/80'; // Softer CTA bg
+  const ctaGradientBg = darkMode ? 'bg-gradient-to-r from-gray-900 to-indigo-900/80' : 'bg-gradient-to-r from-indigo-500 to-purple-600';
+  const ctaDemoButtonBg = darkMode ? 'bg-white text-indigo-600 hover:bg-indigo-50' : 'bg-white text-indigo-600 hover:bg-slate-50';
+  const ctaMockupBg = darkMode ? 'bg-gray-900' : 'bg-white';
+  const newsletterSectionBg = darkMode ? 'bg-gray-800' : 'bg-slate-50/90'; // Softer newsletter bg
+  const footerBg = darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-slate-100/80'; // Subtle border
+  const modalBg = darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white';
+  const modalCloseButtonHover = darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-slate-100 text-slate-500';
+  const modalLabelColor = darkMode ? 'text-gray-300' : 'text-slate-700';
+  const modalInputBg = darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-slate-100 border-slate-200/90 text-slate-900'; // Adjust input bg
+  const modalSubtextColor = darkMode ? 'text-gray-400' : 'text-slate-500';
   
   const handleDemo = () => {
     setShowLoginModal(true);
@@ -125,259 +456,256 @@ const LandingPage: React.FC = () => {
     }
   ];
   
-  // Fix the features mapping
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 text-gray-900'}`}>
-      {/* Navbar - improve dark mode appearance */}
-      <nav className={`fixed w-full z-50 transition-colors duration-300 ${darkMode ? 'bg-gray-900/95 backdrop-blur-lg border-b border-gray-800' : 'bg-white/90 backdrop-blur-lg shadow-sm'}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${bgColor} ${textColor}`}>
+      {/* Navbar - Simplified with bakery-inspired design */}
+      <nav className={`fixed w-full z-50 transition-colors duration-300 ${navBgColor}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-2 ${darkMode ? 'bg-indigo-900' : 'bg-indigo-100'}`}>
-                  <span className="text-xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">SQ</span>
+              <div className={`p-2 rounded-xl ${darkMode ? 'bg-indigo-900' : 'bg-[#FFF0E8]'}`}>
+                <svg className={`w-8 h-8 ${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">StreakQuest</span>
+              <span className={`ml-2 text-xl font-bold ${textColor}`}>StreakQuest</span>
               </div>
-            </div>
-            <div className={`flex-grow-0 flex items-center space-x-2 sm:space-x-4 ${darkMode ? 'text-white' : 'text-gray-700'}`}>
+            <div className="flex items-center space-x-4">
               <button 
-                onClick={() => toggleDarkMode()} 
-                className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
+                className={`p-2 rounded-full transition-colors ${themeToggleHoverColor}`}
+                onClick={toggleDarkMode}
                 aria-label="Toggle dark mode"
               >
-                {darkMode ? <FaSun className="text-amber-400" /> : <FaMoon className="text-indigo-700" />}
+                {darkMode ? (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                  </svg>
+                )}
               </button>
-              
-              {/* Sign up button */}
+              <button 
+                onClick={() => setShowLoginModal(true)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700'}`}
+              >
+                Log in
+              </button>
               <Link
                 to="/signup"
-                className={`hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
-                  darkMode 
-                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-                    : 'bg-indigo-500 hover:bg-indigo-600 text-white'
-                } transition-colors shadow-md`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-[#FF9D76] hover:bg-[#FF8A5B]'}`}
               >
-                <FaRocket className="text-xs" />
-                <span>Sign Up</span>
+                Sign up
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section - improve dark mode appearance */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      {/* Hero Section - Inspired by the Dribbble design */}
+      <section className="pt-36 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-20 left-20 w-64 h-64 rounded-full bg-indigo-100/40 blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-purple-100/30 blur-3xl"></div>
+        <div className="absolute top-1/3 right-1/3 w-32 h-32 rounded-full bg-indigo-100/20 blur-2xl"></div>
+        
+        <div className="max-w-7xl mx-auto relative">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Left side text content */}
             <motion.div 
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
-              className="space-y-6"
+              className="space-y-8"
             >
-              <motion.h1 
-                variants={fadeInUp}
-                className="text-4xl md:text-5xl font-bold leading-tight"
-              >
-                Transform <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">daily actions</span> into lifelong habits
-              </motion.h1>
+              <div className={`inline-block px-4 py-1.5 rounded-full ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'} text-sm font-medium mb-2`}>
+                Transform Your Habits
+              </div>
+              
+              <motion.div variants={fadeInUp} className="space-y-3">
+                <h1 className={`text-5xl md:text-6xl font-bold leading-tight tracking-tight ${textColor}`}>
+                  Nothing Can Stop 
+                </h1>
+                <h1 className={`text-5xl md:text-6xl font-bold leading-tight tracking-tight ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'}`}>
+                  A Good Habit
+                </h1>
+              </motion.div>
+              
               <motion.p 
                 variants={fadeInUp}
-                className={`text-lg md:text-xl ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}
+                className={`text-lg ${heroSubtextColor} max-w-lg leading-relaxed`}
               >
                 StreakQuest turns habit-building into an engaging journey with visual tracking, analytics, and achievement rewards.
               </motion.p>
+              
               <motion.div 
                 variants={fadeInUp}
-                className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4"
+                className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 pt-2"
               >
+                {/* Primary "Try Demo" Button */}
                 <button 
-                  className={`px-8 py-3 rounded-lg font-medium ${
-                    darkMode 
-                      ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                      : 'bg-white text-gray-800 hover:bg-gray-50'
-                  } border transition-all shadow-md hover:shadow-lg`}
+                  onClick={handleDemo}
+                  className={`px-8 py-3.5 rounded-lg font-medium transition-all ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-[#FF9D76] hover:bg-[#FF8A5B]'} text-white`}
+                  data-demo-button="true"
                 >
-                  Learn More
+                  Try Demo
+                </button>
+                
+                {/* Video Button - inspired by the Dribbble design */}
+                <button className={`px-8 py-3.5 rounded-lg font-medium flex items-center justify-center space-x-3 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-slate-700'} shadow-sm hover:shadow transition-all`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-700' : 'bg-[#FFF0E8]'}`}>
+                    <svg className={`w-4 h-4 ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'}`} viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                  <span>Intro Video</span>
                 </button>
               </motion.div>
             </motion.div>
             
-            {/* Interactive Habit Calendar Visualization */}
+            {/* Right side visual - Round blob with app mockup */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className={`absolute inset-0 rounded-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900/20 to-purple-900/20 blur-3xl' : 'bg-gradient-to-r from-indigo-200/50 to-purple-200/50 blur-3xl'}`}></div>
+              {/* Peachy blob background */}
+              <div className="absolute inset-0 translate-x-8 translate-y-8 rounded-full bg-[#FFDBCB] opacity-80"></div>
               
-              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl">
-                <div className={`p-6 ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
-                  <h3 className="text-xl font-bold mb-4">Watch habits form in real-time</h3>
-                  
+              {/* App mockup container */}
+              <div className={`relative z-10 bg-white rounded-3xl overflow-hidden shadow-xl p-4 border ${borderColor}`}>
+                <div className="rounded-2xl overflow-hidden">
                   {/* Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-1 mb-6">
-                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
-                      <div key={`header-${i}`} className={`text-center text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {day}
-                      </div>
-                    ))}
+                  <div className="bg-white p-6">
+                    <h3 className={`text-xl font-semibold mb-5 text-slate-800`}>Daily Habits</h3>
                     
-                    {/* Generate 30 day calendar */}
-                    {Array.from({ length: 35 }).map((_, i) => (
+                    <div className="grid grid-cols-7 gap-2 mb-6">
+                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                        <div key={`header-${i}`} className="text-center text-xs font-medium text-slate-400">{day}</div>
+                      ))}
+                      {Array.from({ length: 35 }).map((_, i) => {
+                        const isActive = [3, 4, 5, 10, 11, 12, 17, 18, 19, 24, 25, 26].includes(i);
+                        return (
                       <motion.div
                         key={`day-${i}`}
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        transition={{ 
-                          delay: i * 0.01,
-                          duration: 0.3
-                        }}
-                        className={`aspect-square rounded-md flex items-center justify-center text-xs
-                          ${i < 30 ? 
-                            darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-100' 
-                            : 'opacity-0'
-                          }`}
+                            transition={{ delay: i * 0.01, duration: 0.3 }}
+                            className={`aspect-square rounded-lg flex items-center justify-center text-xs 
+                              ${i < 30 
+                                ? isActive 
+                                  ? 'bg-[#FFDBCB] border border-[#FFBEA7] text-[#FF9D76] font-medium' 
+                                  : 'bg-slate-50 border border-slate-100 text-slate-600' 
+                                : 'opacity-0'}`}
                       >
                         {i < 30 ? i + 1 : ''}
                       </motion.div>
-                    ))}
+                        );
+                      })}
                   </div>
                   
-                  {/* Habit List with Interactive Streaks */}
-                  <div className="space-y-4">
-                    {HABIT_EXAMPLES.map((habit, index) => (
+                    {/* Habit List */}
+                    <div className="space-y-5">
+                      {HABIT_EXAMPLES.slice(0, 3).map((habit, index) => (
                       <div key={`habit-${index}`} className="relative">
-                        <div className="flex items-center mb-2">
-                          <div className={`w-8 h-8 rounded-full mr-2 bg-gradient-to-r ${habit.color} flex items-center justify-center text-white`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className={`w-10 h-10 rounded-xl mr-3 ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} ${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'} flex items-center justify-center`}>
                             {habit.icon}
                           </div>
-                          <span className="font-medium">{habit.name}</span>
-                          <div className="ml-auto flex items-center">
-                            <FaFire className={`mr-1 ${darkMode ? 'text-orange-400' : 'text-orange-500'}`} />
-                            <span className={`font-bold ${darkMode ? 'text-orange-400' : 'text-orange-500'}`}>{habit.days.length}</span>
+                              <div>
+                                <h4 className="font-medium text-slate-800">{habit.name}</h4>
+                                <div className="text-xs text-slate-400">{habit.days.length} day streak</div>
                           </div>
                         </div>
-                        <div className="h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                          <div 
-                            className={`h-full rounded-full bg-gradient-to-r ${habit.color}`}
-                            style={{ width: `${(habit.days.length / 30) * 100}%` }}
-                          ></div>
-                        </div>
-                        <div className="flex mt-1">
-                          {Array.from({ length: 30 }).map((_, dayIndex) => (
-                            <motion.div 
-                              key={`habit-${index}-day-${dayIndex}`}
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ 
-                                scale: habit.days.includes(dayIndex + 1) ? 1 : 0,
-                                opacity: habit.days.includes(dayIndex + 1) ? 1 : 0
-                              }}
-                              transition={{ 
-                                delay: index * 0.3 + dayIndex * 0.03,
-                                type: "spring",
-                                stiffness: 500,
-                                damping: 30
-                              }}
-                              className={`w-1 h-1 rounded-full bg-gradient-to-r ${habit.color} mx-[3.3%] first:ml-0`}
-                            />
-                          ))}
+                            <div className="text-sm font-medium text-[#FF9D76]">+{habit.days.length}</div>
                         </div>
                       </div>
                     ))}
                   </div>
-                  
-                  {/* Interactive Badge */}
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 2.5, duration: 0.5 }}
-                    className={`mt-6 flex items-center justify-between p-3 rounded-lg ${
-                      darkMode ? 'bg-indigo-900/30 border border-indigo-800/50' : 'bg-indigo-50 border border-indigo-100'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full mr-3 flex items-center justify-center bg-gradient-to-r from-amber-400 to-orange-500 text-white`}>
-                        <FaTrophy />
                       </div>
-                      <div>
-                        <h4 className="font-bold text-sm">Consistency Champion</h4>
-                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Complete habits 5 days in a row</p>
                       </div>
                     </div>
-                    <div className={`text-sm font-bold ${darkMode ? 'text-amber-400' : 'text-amber-500'}`}>
-                      Achieved!
+              
+              {/* Decorative elements */}
+              <div className="absolute -right-4 top-1/2 -translate-y-1/2 z-20">
+                <div className="absolute -right-4 -top-12 w-24 h-24 opacity-80">
+                  <svg viewBox="0 0 100 100" className="w-full h-full fill-[#FF9D76]/20">
+                    <circle cx="50" cy="50" r="50" />
+                  </svg>
                     </div>
-                  </motion.div>
+                <div className="absolute -right-8 top-12 w-16 h-16 opacity-60">
+                  <svg viewBox="0 0 100 100" className="w-full h-full fill-indigo-200">
+                    <circle cx="50" cy="50" r="50" />
+                  </svg>
                 </div>
               </div>
-              
-              {/* Decorative Elements */}
-              <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-xl ${darkMode ? 'bg-purple-800/30' : 'bg-purple-200'} shadow-lg`}></div>
-              <div className={`absolute -top-4 -left-4 w-16 h-16 rounded-xl ${darkMode ? 'bg-indigo-800/30' : 'bg-indigo-200'} shadow-lg`}></div>
-              <HabitSparkles />
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Creative Habit Journey Section */}
-      <section className="py-24 overflow-hidden">
+      {/* Creative Habit Journey Section - original implementation with updated styles */}
+      <section className="py-28 overflow-hidden"> {/* Increased padding */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <ScrollingHabitJourney darkMode={darkMode} />
         </div>
       </section>
 
-      {/* Features Section - improve dark mode appearance */}
-      <section className={`py-20 ${darkMode ? 'bg-gray-800/30' : 'bg-white'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Features Section - Updated with bakery-inspired aesthetic */}
+      <section className={`py-24 px-4 sm:px-6 lg:px-8 ${bgColor}`}>
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
+            <div className={`inline-block px-4 py-1.5 rounded-full ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'} text-sm font-medium mb-4`}>
+              Why Choose StreakQuest?
+            </div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="text-3xl font-bold mb-4"
+              className={`text-3xl md:text-4xl font-bold ${textColor} mb-6`}
             >
-              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">Key Features</span>
+              Features that transform habits
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className={`max-w-2xl mx-auto text-lg ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}
+              className={`max-w-2xl mx-auto text-lg ${heroSubtextColor}`}
             >
-              Everything you need to build and maintain successful habits
+              Our unique approach helps you build lasting habits with visual feedback and rewarding experiences
             </motion.p>
           </div>
 
-          {/* Feature cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <motion.div
-                key={feature.title}
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`rounded-xl overflow-hidden shadow-lg transition-all p-8 ${
-                  darkMode 
-                    ? 'bg-gray-800/50 hover:bg-gray-800/80 text-white' 
-                    : 'bg-white hover:shadow-xl text-gray-800'
-                }`}
+                viewport={{ once: true }}
+                className={`${cardBgColor} rounded-xl overflow-hidden shadow-sm border ${borderColor} transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px]`}
               >
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-6 ${
-                  darkMode ? 'bg-indigo-900/50' : 'bg-indigo-100'
-                }`}>
-                  {feature.icon}
+                <div className="p-8">
+                  <div className={`w-16 h-16 rounded-xl mb-6 ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} flex items-center justify-center`}>
+                    <span className={`text-2xl ${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'}`}>{feature.icon}</span>
                 </div>
-                <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
-                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {feature.description}
-                </p>
+                  <h3 className={`text-xl font-bold mb-3 ${textColor}`}>{feature.title}</h3>
+                  <p className={`${subtextColor}`}>{feature.description}</p>
+                </div>
+                <div className="p-6 border-t border-slate-100">
+                  <button className={`text-sm font-medium ${darkMode ? 'text-indigo-400' : 'text-[#FF9D76]'} flex items-center`}>
+                    Learn more
+                    <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -385,7 +713,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* App Showcase */}
-      <section className="py-20">
+      <section className="py-28"> {/* Increased padding */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -447,857 +775,546 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3D Habit Building Visualization - improve dark mode appearance */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Matrix Section - Updated with bakery-inspired aesthetic */}
+      <section className={`py-24 px-4 sm:px-6 lg:px-8 ${bgColor}`}>
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl font-bold mb-4"
-            >
-              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                The Habit Matrix
-              </span>
-            </motion.h2>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className={`max-w-2xl mx-auto text-lg ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}
-            >
-              Visualize how different aspects of your habits interconnect and grow
-            </motion.p>
+            <div className={`inline-block px-4 py-1.5 rounded-full ${featureCardIconBg} ${accentColor} text-sm font-medium mb-4`}>
+              Visualize Connections
+            </div>
+            <h2 className={`text-3xl md:text-4xl font-bold ${textColor} mb-6`}>Habit Matrix</h2>
+            <p className={`max-w-2xl mx-auto text-lg ${heroSubtextColor}`}>
+              Discover how your habits interconnect and influence each other for maximum effectiveness.
+            </p>
           </div>
           
-          <HabitMatrix darkMode={darkMode} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Matrix Visualization */}
+            <div className={`rounded-2xl overflow-hidden shadow-lg border ${borderColor} ${cardBgColor} p-6`}>
+              <div className="aspect-square relative">
+                {/* Nodes */}
+                {[
+                  { id: 1, x: 50, y: 50, label: 'Morning Routine' },
+                  { id: 2, x: 20, y: 30, label: 'Exercise' },
+                  { id: 3, x: 80, y: 30, label: 'Meditation' },
+                  { id: 4, x: 20, y: 70, label: 'Reading' },
+                  { id: 5, x: 80, y: 70, label: 'Journaling' },
+                ].map((node, index) => (
+                  <div 
+                    key={index}
+                    className={`absolute w-16 h-16 rounded-full ${featureCardIconBg} ${accentColor} flex items-center justify-center shadow-lg transform -translate-x-1/2 -translate-y-1/2 border-2 border-white cursor-pointer hover:scale-110 transition-transform duration-300`}
+                    style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                  >
+                    <span className="text-xs font-medium text-center px-1">{node.label}</span>
+          </div>
+                ))}
+                
+                {/* Connection Lines - SVG */}
+                <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
+                  <line x1="50%" y1="50%" x2="20%" y2="30%" stroke={darkMode ? "#FF9D76" : "#FF9D76"} strokeWidth="2" strokeDasharray="5,5" />
+                  <line x1="50%" y1="50%" x2="80%" y2="30%" stroke={darkMode ? "#FF9D76" : "#FF9D76"} strokeWidth="2" strokeDasharray="5,5" />
+                  <line x1="50%" y1="50%" x2="20%" y2="70%" stroke={darkMode ? "#FF9D76" : "#FF9D76"} strokeWidth="2" strokeDasharray="5,5" />
+                  <line x1="50%" y1="50%" x2="80%" y2="70%" stroke={darkMode ? "#FF9D76" : "#FF9D76"} strokeWidth="2" strokeDasharray="5,5" />
+                  <line x1="20%" y1="30%" x2="20%" y2="70%" stroke={darkMode ? "#4F46E5" : "#8B5CF6"} strokeWidth="2" strokeDasharray="5,5" opacity="0.5" />
+                  <line x1="80%" y1="30%" x2="80%" y2="70%" stroke={darkMode ? "#4F46E5" : "#8B5CF6"} strokeWidth="2" strokeDasharray="5,5" opacity="0.5" />
+                </svg>
+                
+                {/* Center Node */}
+                <div className="absolute left-1/2 top-1/2 w-24 h-24 rounded-full bg-[#FF9D76] text-white flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 shadow-lg border-4 border-white">
+                  <span className="text-sm font-bold text-center">Habit Core</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Matrix Text Content */}
+            <div className="space-y-6">
+              <h3 className={`text-2xl font-bold ${textColor}`}>Understand Your Habit Ecosystem</h3>
+              <p className={`${heroSubtextColor}`}>
+                Our Habit Matrix shows you how habits relate to each other, helping you identify keystone habits 
+                that can trigger positive chain reactions in your daily routine.
+              </p>
+              
+              <div className="space-y-5 mt-8">
+                {[
+                  { title: 'Keystone Habits', description: 'Identify the core habits that trigger cascading positive effects throughout your day.' },
+                  { title: 'Habit Stacking', description: 'Link new habits to established ones to make them stick more effectively.' },
+                  { title: 'Friction Analysis', description: 'See which habits might be conflicting with each other and resolve the tension.' },
+                ].map((feature, index) => (
+                  <div key={index} className="flex">
+                    <div className={`w-12 h-12 rounded-xl mr-4 ${featureCardIconBg} ${accentColor} flex items-center justify-center shrink-0`}>
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className={`text-lg font-medium ${textColor}`}>{feature.title}</h4>
+                      <p className={`${featureCardDescColor} mt-1`}>{feature.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <button className={`mt-6 px-6 py-3 rounded-lg font-medium transition-all ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-[#FF9D76] hover:bg-[#FF8A5B]'} text-white`}>
+                Explore Your Matrix
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Interactive Habit Formation Simulation - improve dark mode appearance */}
-      <section className={`py-24 ${darkMode ? 'bg-gray-800/30' : 'bg-gradient-to-br from-indigo-50 to-purple-50'}`}>
+      {/* Interactive Habit Formation Simulation - original with visual updates */}
+      <section className={`py-28 ${simulatorSectionBg}`}> {/* Increased padding */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl font-bold mb-4"
-            >
-              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <div className={`inline-block px-4 py-1.5 rounded-full ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} ${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'} text-sm font-medium mb-4`}>
+              Plan For Success
+            </div>
+            <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${textColor}`}>
                 Build Your Own Habit System
-              </span>
-            </motion.h2>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className={`max-w-2xl mx-auto text-lg ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}
-            >
+            </h2>
+            <p className={`max-w-2xl mx-auto text-lg ${subtextColor}`}>
               Experiment with the key factors that make or break habit formation
-            </motion.p>
+            </p>
           </div>
           
           <HabitSimulator darkMode={darkMode} />
         </div>
       </section>
 
-      {/* CTA Section - moved to the very end, after Newsletter */}
-      <section className={`py-20 ${darkMode ? 'bg-gray-900' : 'bg-indigo-50'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:flex lg:items-center lg:justify-between rounded-2xl overflow-hidden shadow-2xl">
-            <div className={`p-10 lg:p-16 ${darkMode ? 'bg-gradient-to-r from-gray-900 to-indigo-900/80' : 'bg-gradient-to-r from-indigo-500 to-purple-600'} lg:w-3/5`}>
+      {/* CTA Section - Updated with bakery-inspired aesthetic */}
+      <section className={`py-24 px-4 sm:px-6 lg:px-8 ${bgColor}`}>
+        <div className="max-w-5xl mx-auto">
+          <div className={`rounded-3xl overflow-hidden shadow-xl border ${borderColor} ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-[#FFF0E8] to-[#FFDBCB]'}`}>
+            <div className="p-12 relative">
+              {/* Decorative Elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#FF9D76]/10 blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-[#FF9D76]/10 blur-2xl"></div>
+              
+              <div className="relative text-center">
               <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="text-3xl font-bold text-white mb-4"
+                  className={`text-3xl md:text-4xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-slate-800'}`}
               >
-                Ready to build lasting habits?
+                  Ready to transform your habits?
               </motion.h2>
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-indigo-100 text-lg mb-8 max-w-xl"
+                  className={`text-lg max-w-2xl mx-auto mb-10 ${darkMode ? 'text-gray-300' : 'text-slate-600'}`}
               >
-                Start your journey towards better habits and track your progress with StreakQuest's beautiful interface.
+                  Join thousands of users who are building better habits and achieving their goals with StreakQuest's proven system.
               </motion.p>
+                
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4"
+                  className="flex flex-col sm:flex-row justify-center gap-4"
               >
                 <button 
                   onClick={handleDemo}
-                  className="px-8 py-3 bg-white text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition-colors shadow-lg"
+                    className={`px-8 py-3.5 rounded-lg font-medium transition-all ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-[#FF9D76] hover:bg-[#FF8A5B]'} text-white`}
                   data-demo-button="true"
                 >
                   Try Demo
                 </button>
+                  <Link
+                    to="/signup"
+                    className={`px-8 py-3.5 rounded-lg font-medium flex items-center justify-center ${darkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-white text-slate-800 hover:bg-slate-50'} shadow-sm transition-all hover:shadow`}
+                  >
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Sign Up
+                  </Link>
               </motion.div>
-            </div>
-            <div className={`hidden lg:block lg:w-2/5 relative ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
-              <img 
-                src={darkMode ? IMAGES.darkMode : IMAGES.mockup} 
-                alt="App mockup" 
-                className="w-full h-full object-cover opacity-90"
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/20"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter Section */}
-      <section className={`py-20 px-4 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className={`text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 ${textColor}`}
-          >
-            <GradientText text="Stay Updated" />
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className={`text-lg mb-8 ${subtextColor}`}
-          >
-            Subscribe to our newsletter to get updates on new features and tips for habit building.
-          </motion.p>
+                
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col sm:flex-row justify-center items-center gap-4"
-          >
-            <input 
-              type="email" 
-              placeholder="Enter your email" 
-              className={`px-4 py-3 rounded-lg ${inputBgColor} ${inputBorderColor} border ${inputTextColor} w-full sm:w-auto sm:flex-1 max-w-md`}
-            />
-            <button className={`px-6 py-3 bg-indigo-600 ${buttonHoverColor} text-white rounded-lg font-medium transition-colors duration-300 w-full sm:w-auto`}>
-              Subscribe
-            </button>
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="mt-12 flex flex-wrap justify-center gap-8"
+                >
+                  {[
+                    { count: '10k+', label: 'Active Users' },
+                    { count: '50M+', label: 'Habits Tracked' },
+                    { count: '4.9/5', label: 'Average Rating' },
+                  ].map((stat, index) => (
+                    <div key={index} className="text-center">
+                      <div className={`text-3xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-[#FF9D76]'}`}>{stat.count}</div>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>{stat.label}</div>
+                    </div>
+                  ))}
           </motion.div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
       
-      {/* Footer section */}
-      <footer className={`py-8 px-4 ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'} border-t`}>
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center">
-          <div className="flex items-center mb-4 sm:mb-0">
-            <img src="/logo.svg" alt="StreakQuest Logo" className="h-8 w-8 mr-2" />
-            <span className={`font-bold text-xl ${textColor}`}>StreakQuest</span>
+      {/* Newsletter Section - Updated with bakery-inspired aesthetic */}
+      <section className={`py-24 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-gray-900/50' : 'bg-[#f5f5fa]'}`}>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Newsletter Text */}
+            <div className="space-y-6">
+              <div className={`inline-block px-4 py-1.5 rounded-full ${featureCardIconBg} ${accentColor} text-sm font-medium mb-2`}>
+                Stay Updated
           </div>
-          <div className={`text-sm ${subtextColor}`}>
-            © {new Date().getFullYear()} StreakQuest. All rights reserved.
+              <h2 className={`text-3xl md:text-4xl font-bold ${textColor}`}>Subscribe to our newsletter</h2>
+              <p className={`${heroSubtextColor} text-lg`}>
+                Get the latest habit-building tips, research findings, and product updates delivered to your inbox.
+              </p>
+              
+              <div className="grid grid-cols-3 gap-6 mt-8">
+                {[
+                  { title: 'Tips & Tricks', description: 'Weekly habit formation techniques based on scientific research' },
+                  { title: 'Case Studies', description: 'Real stories from users who transformed their lives' },
+                  { title: 'Product Updates', description: 'Be the first to know about new features and improvements' }
+                ].map((item, index) => (
+                  <div key={index} className="col-span-3 md:col-span-1">
+                    <div className="flex">
+                      <div className={`w-10 h-10 rounded-xl mr-3 ${featureCardIconBg} ${accentColor} flex items-center justify-center shrink-0`}>
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                          <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+          </div>
+                      <div>
+                        <h4 className={`font-medium ${textColor}`}>{item.title}</h4>
+                        <p className={`text-sm ${featureCardDescColor}`}>{item.description}</p>
+        </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Newsletter Form */}
+            <div className={`rounded-2xl overflow-hidden shadow-lg border ${borderColor} ${cardBgColor} p-8`}>
+              <h3 className={`text-xl font-bold ${textColor} mb-6`}>Join our community</h3>
+              
+              <form className="space-y-5">
+                <div>
+                  <label className={`block text-sm font-medium ${heroSubtextColor} mb-2`}>Full Name</label>
+                  <input
+                    type="text" 
+                    placeholder="Your name" 
+                    className={`w-full px-4 py-3 rounded-lg border ${inputBorderColor} ${inputBgColor} ${inputTextColor} focus:ring-2 focus:ring-[#FF9D76] focus:border-transparent transition-colors`} 
+                  />
+                </div>
+                
+                <div>
+                  <label className={`block text-sm font-medium ${heroSubtextColor} mb-2`}>Email Address</label>
+                  <input 
+                    type="email"
+                    placeholder="you@example.com" 
+                    className={`w-full px-4 py-3 rounded-lg border ${inputBorderColor} ${inputBgColor} ${inputTextColor} focus:ring-2 focus:ring-[#FF9D76] focus:border-transparent transition-colors`} 
+                  />
+                </div>
+                
+                <div>
+                  <label className={`block text-sm font-medium ${heroSubtextColor} mb-2`}>Interests</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {['Habit Building', 'Productivity', 'Mental Health', 'Physical Health'].map((interest, index) => (
+                      <div key={index} className="flex items-center">
+                  <input
+                          type="checkbox" 
+                          id={`interest-${index}`} 
+                          className="w-4 h-4 rounded text-[#FF9D76] focus:ring-[#FF9D76]" 
+                        />
+                        <label htmlFor={`interest-${index}`} className={`ml-2 text-sm ${textColor}`}>{interest}</label>
+                </div>
+                    ))}
+              </div>
+                </div>
+                
+              <button
+                type="submit"
+                  className={`w-full py-3 rounded-lg font-medium transition-all ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-[#FF9D76] hover:bg-[#FF8A5B]'} text-white mt-6`}
+                >
+                  Subscribe Now
+              </button>
+                
+                <p className={`text-xs text-center ${featureCardDescColor} mt-4`}>
+                  By subscribing, you agree to our privacy policy and terms of service.
+              </p>
+            </form>
+        </div>
+    </div>
+        </div>
+      </section>
+      
+      {/* Footer Section - Updated with bakery-inspired aesthetic */}
+      <footer className={`py-16 px-4 sm:px-6 lg:px-8 ${bgColor} border-t ${borderColor}`}>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+            {/* Company Info */}
+            <div className="md:col-span-1">
+              <div className="flex items-center mb-6">
+                <div className={`p-2 rounded-xl ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} mr-2`}>
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+            </div>
+                <span className={`text-xl font-bold ${textColor}`}>StreakQuest</span>
+            </div>
+              <p className={`${subtextColor} mb-6`}>
+                Transforming daily actions into lifelong habits through engaging tracking and rewards.
+              </p>
+              <div className="flex space-x-4">
+                {[
+                  { icon: <FaTwitter />, link: "#" },
+                  { icon: <FaFacebook />, link: "#" },
+                  { icon: <FaInstagram />, link: "#" },
+                  { icon: <FaGithub />, link: "#" }
+                ].map((social, index) => (
+                  <a 
+                    key={index} 
+                    href={social.link} 
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-slate-100'} transition-colors`}
+                  >
+                    <span className={`${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'}`}>
+                      {social.icon}
+                      </span>
+                  </a>
+            ))}
           </div>
         </div>
+        
+            {/* Quick Links */}
+            <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-8">
+              {[
+                {
+                  title: 'Product',
+                  links: ['Features', 'Pricing', 'Testimonials', 'Integrations', 'Updates']
+                },
+                {
+                  title: 'Company',
+                  links: ['About Us', 'Careers', 'Press', 'Partners', 'Contact']
+                },
+                {
+                  title: 'Resources',
+                  links: ['Blog', 'Knowledge Base', 'Guides', 'API Docs', 'Community']
+                }
+              ].map((category, index) => (
+                <div key={index}>
+                  <h4 className={`text-lg font-bold mb-4 ${textColor}`}>{category.title}</h4>
+                  <ul className="space-y-3">
+                    {category.links.map((link, linkIndex) => (
+                      <li key={linkIndex}>
+                        <a href="#" className={`text-sm ${subtextColor} hover:${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'} transition-colors`}>
+                          {link}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+          </div>
+                  </div>
+                  
+          <div className={`mt-12 pt-8 border-t ${borderColor} flex flex-col md:flex-row justify-between items-center`}>
+            <div className={`text-sm ${subtextColor} mb-4 md:mb-0`}>
+              © {new Date().getFullYear()} StreakQuest. All rights reserved.
+                  </div>
+            <div className="flex space-x-6">
+              {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Accessibility'].map((link, index) => (
+                <a key={index} href="#" className={`text-sm ${subtextColor} hover:${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'} transition-colors`}>
+                  {link}
+                </a>
+              ))}
+                </div>
+              </div>
+          </div>
       </footer>
-
-      {/* Demo Login Modal */}
+          
+      {/* Modal Implementation */}
       {showLoginModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 px-4 sm:px-0">
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
-            onClick={() => setShowLoginModal(false)}
-          ></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className={`relative w-full max-w-md p-8 rounded-2xl shadow-2xl ${
-              darkMode 
-                ? 'bg-gray-900 border border-gray-800' 
-                : 'bg-white'
-            }`}
+            className={`w-full max-w-md rounded-2xl overflow-hidden shadow-2xl ${cardBgColor} p-8 relative`}
           >
             <button 
               onClick={() => setShowLoginModal(false)}
-              className={`absolute top-4 right-4 p-1 rounded-full ${
-                darkMode 
-                  ? 'hover:bg-gray-800 text-gray-400' 
-                  : 'hover:bg-gray-100 text-gray-500'
-              }`}
+              className={`absolute top-4 right-4 p-2 rounded-full ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-slate-100'} transition-colors`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <svg className={`w-5 h-5 ${textColor}`} viewBox="0 0 24 24" fill="none">
+                <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
             </button>
-            <h3 className="text-2xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">Demo Login</span>
-            </h3>
-            <form onSubmit={handleDemoLogin}>
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label htmlFor="email" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    value="demo@streakquest.app"
-                    readOnly
-                    className={`w-full px-4 py-3 rounded-lg ${
-                      darkMode 
-                        ? 'bg-gray-800 border-gray-700 text-white' 
-                        : 'bg-gray-50 border-gray-200 text-gray-900'
-                    } border focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    value="demodemo"
-                    readOnly
-                    className={`w-full px-4 py-3 rounded-lg ${
-                      darkMode 
-                        ? 'bg-gray-800 border-gray-700 text-white' 
-                        : 'bg-gray-50 border-gray-200 text-gray-900'
-                    } border focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                  />
-                </div>
+            
+            <div className="text-center mb-6">
+              <div className={`inline-flex p-3 rounded-xl ${darkMode ? 'bg-indigo-900/50' : 'bg-[#FFF0E8]'} mb-4`}>
+                <svg className={`w-6 h-6 ${darkMode ? 'text-indigo-300' : 'text-[#FF9D76]'}`} viewBox="0 0 24 24" fill="none">
+                  <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </div>
-              <button
-                type="submit"
-                className={`w-full px-4 py-3 rounded-lg font-medium ${
-                  darkMode 
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700' 
-                    : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600'
-                } text-white transition-all shadow-lg hover:shadow-xl`}
+              <h3 className={`text-2xl font-bold ${textColor}`}>Demo Login</h3>
+              <p className={`${subtextColor} mt-2`}>
+                Log in to continue your habit journey
+              </p>
+        </div>
+        
+            <form onSubmit={handleDemoLogin} className="space-y-5">
+              <div>
+                <label className={`block text-sm font-medium ${subtextColor} mb-2`}>Email Address</label>
+                <input 
+                  type="email" 
+                  value="demo@streakquest.app"
+                  readOnly
+                  className={`w-full px-4 py-3 rounded-lg border ${inputBorderColor} ${inputBgColor} ${inputTextColor} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors`} 
+                />
+        </div>
+        
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className={`text-sm font-medium ${subtextColor}`}>Password</label>
+              </div>
+                <input 
+                  type="password" 
+                  value="demodemo"
+                  readOnly
+                  className={`w-full px-4 py-3 rounded-lg border ${inputBorderColor} ${inputBgColor} ${inputTextColor} focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors`} 
+                />
+                </div>
+              
+        <button
+                type="submit" 
+                className={`w-full py-3.5 rounded-lg font-medium transition-all ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-[#FF9D76] hover:bg-[#FF8A5B]'} text-white mt-6`}
               >
                 Enter Demo
-              </button>
-              <p className={`mt-4 text-sm text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+        </button>
+              
+              <p className={`text-xs text-center ${subtextColor} mt-4`}>
                 This is a demo account. No sign up required.
               </p>
             </form>
-          </motion.div>
-        </div>
-      )}
+      </motion.div>
+                  </div>
+                )}
     </div>
   );
 };
 
-// Animated Sparkles Component
-const HabitSparkles = () => {
-  const sparklePositions = [
-    { top: '10%', left: '20%', delay: 1.2 },
-    { top: '70%', left: '10%', delay: 1.5 },
-    { top: '30%', left: '80%', delay: 1.8 },
-    { top: '80%', left: '70%', delay: 2.1 },
-    { top: '40%', left: '30%', delay: 2.4 },
-  ];
-  
-  return (
-    <>
-      {sparklePositions.map((pos, i) => (
-        <motion.div
-          key={`sparkle-${i}`}
-          initial={{ scale: 0, opacity: 0, rotate: 0 }}
-          animate={{ 
-            scale: [0, 1, 0.8, 1, 0], 
-            opacity: [0, 1, 1, 1, 0],
-            rotate: [0, 45, -45, 90, 0]
-          }}
-          transition={{ 
-            delay: pos.delay, 
-            duration: 2,
-            repeat: Infinity,
-            repeatDelay: 3
-          }}
-          className="absolute w-4 h-4 z-20"
-          style={{ top: pos.top, left: pos.left }}
-        >
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L15 9H22L16 14L18 21L12 17L6 21L8 14L2 9H9L12 2Z" fill="url(#sparkle-gradient)" />
-            <defs>
-              <linearGradient id="sparkle-gradient" x1="2" y1="2" x2="22" y2="21" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#6366F1" />
-                <stop offset="1" stopColor="#EC4899" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </motion.div>
-      ))}
-    </>
-  );
-};
+// Add type interface for CursorAnimation props
+interface CursorAnimationProps {
+  targetRef: React.RefObject<HTMLButtonElement>;
+  isActive: boolean;
+  onClick: () => void;
+}
 
-// Update ScrollingHabitJourney with type annotation
-const ScrollingHabitJourney: React.FC<ScrollingHabitJourneyProps> = ({ darkMode }) => {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({ 
-    target: containerRef,
-    offset: ["start end", "end start"] 
-  });
-  
-  // Change types to properly define state
-  const [currentDay, setCurrentDay] = useState(0);
-  const [streakCount, setStreakCount] = useState(0);
-  const [completedHabits, setCompletedHabits] = useState<boolean[]>([]);
-  
-  // Parallax and progress-based animations
-  const dayProgress = useTransform(scrollYProgress, [0, 1], [0, 30]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.8, 1, 1, 0.8]);
-  
-  // Update state based on scroll position
+// Update the CursorAnimation component with proper TypeScript types
+const CursorAnimation: React.FC<CursorAnimationProps> = ({ targetRef, isActive, onClick }) => {
+  const [position, setPosition] = useState({ x: 50, y: 50 });
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const controls = useAnimation();
+
   useEffect(() => {
-    const unsubscribe = dayProgress.onChange(latest => {
-      const day = Math.min(30, Math.max(0, Math.floor(latest)));
-      if (day !== currentDay) {
-        setCurrentDay(day);
+    if (isActive && targetRef.current && cursorRef.current) {
+      // Get the target button's position
+      const targetRect = targetRef.current.getBoundingClientRect();
+      const cursorRect = cursorRef.current.getBoundingClientRect();
+      
+      // Calculate center position of button
+      const targetX = targetRect.left + targetRect.width / 2 - cursorRect.width / 2;
+      const targetY = targetRect.top + targetRect.height / 2 - cursorRect.height / 2;
+      
+      // Set initial position (off-screen to the right)
+      setPosition({ x: window.innerWidth - 100, y: targetY });
+      
+      // Animate cursor
+      const animateCursor = async () => {
+        // Move to target position
+        await controls.start({
+          x: targetX,
+          y: targetY,
+          transition: { duration: 1.5, ease: "easeInOut" }
+        });
         
-        // Simulate habit completion patterns
-        if (day > 0) {
-          const pattern = [
-            // On days 1-5, complete 1 habit
-            ...(day <= 5 ? [1] : []),
-            // On days 6-15, complete 2 habits
-            ...(day > 5 && day <= 15 ? [2] : []),
-            // On days 16-25, complete 3 habits
-            ...(day > 15 && day <= 25 ? [3] : []),
-            // On days 26-30, complete all 4 habits
-            ...(day > 25 ? [4] : [])
-          ];
-          
-          const completed = pattern[0] || 0;
-          // Fix typing issue by explicitly typing the array
-          setCompletedHabits(Array(completed).fill(true) as boolean[]);
-          
-          // Update streak
-          if (day > 1) {
-            setStreakCount(day);
-          }
-        }
-      }
-    });
-    
-    return () => unsubscribe();
-  }, [dayProgress, currentDay]);
-  
-  const habits = [
-    { name: "Morning Run", icon: <FaRunning />, color: "from-blue-400 to-cyan-400" },
-    { name: "Read 20 Pages", icon: <FaBook />, color: "from-amber-400 to-orange-400" },
-    { name: "Drink Water", icon: <FaWater />, color: "from-emerald-400 to-teal-400" },
-    { name: "Meditate", icon: <FaBrain />, color: "from-purple-400 to-violet-400" }
-  ];
-  
-  return (
-    <div ref={containerRef} className="min-h-[150vh] relative pt-16 pb-32">
-      <motion.div 
-        className="text-center mb-12"
-        style={{ opacity, scale }}
-      >
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">
-          <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-            The Habit Journey
-          </span>
-        </h2>
-        <p className={`max-w-2xl mx-auto text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-          Scroll to see how small daily actions transform into powerful habits
-        </p>
-      </motion.div>
-      
-      {/* Visualization */}
-      <motion.div
-        className={`max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-2xl ${
-          darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-100'
-        }`}
-        style={{ opacity, scale }}
-      >
-        {/* Header with day counter */}
-        <div className={`p-6 border-b ${darkMode ? 'border-gray-800' : 'border-gray-100'}`}>
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="font-bold text-xl">Your Habit Dashboard</h3>
-              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Building consistency day by day</p>
-            </div>
-            <div className={`px-4 py-2 rounded-full ${
-              darkMode ? 'bg-indigo-900/30 text-indigo-200' : 'bg-indigo-50 text-indigo-800'
-            }`}>
-              <span className="font-mono font-bold">Day {currentDay}</span>
-            </div>
-          </div>
-        </div>
+        // Pause for a moment
+        await controls.start({
+          scale: 1.1,
+          transition: { duration: 0.2 }
+        });
         
-        {/* Habit tracker */}
-        <div className="p-6">
-          <div className="space-y-6">
-            {habits.map((habit, index) => (
-              <div key={index} className="flex items-center">
-                <div className={`w-12 h-12 rounded-xl mr-4 flex items-center justify-center bg-gradient-to-r ${habit.color} text-white`}>
-                  {habit.icon}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-medium">{habit.name}</span>
-                    {currentDay > 0 && (
-                      <span className={`text-sm font-mono ${
-                        index < completedHabits.length
-                          ? darkMode ? 'text-green-400' : 'text-green-600'
-                          : darkMode ? 'text-gray-500' : 'text-gray-400'
-                      }`}>
-                        {index < completedHabits.length ? 'COMPLETED' : 'PENDING'}
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="h-2 w-full rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800">
-                    <motion.div 
-                      className={`h-full rounded-full bg-gradient-to-r ${habit.color}`}
-                      style={{ 
-                        width: index < completedHabits.length 
-                          ? '100%' 
-                          : '0%' 
-                      }}
-                      animate={{
-                        width: index < completedHabits.length ? '100%' : '0%'
-                      }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Streak display */}
-          <motion.div 
-            className={`mt-8 p-4 rounded-xl ${
-              darkMode 
-                ? 'bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-700' 
-                : 'bg-gradient-to-r from-gray-50 to-white border border-gray-200'
-            }`}
-            animate={{
-              boxShadow: streakCount > 7 
-                ? ['0px 0px 0px rgba(250, 204, 21, 0)', '0px 0px 15px rgba(250, 204, 21, 0.7)', '0px 0px 0px rgba(250, 204, 21, 0)']
-                : 'none'
-            }}
-            transition={{
-              repeat: Infinity,
-              duration: 2
-            }}
-          >
-            <div className="flex items-center">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                streakCount > 7 
-                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' 
-                  : darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-500'
-              }`}>
-                <FaFire className={streakCount > 7 ? 'text-xl' : 'text-lg'} />
-              </div>
-              <div className="ml-4">
-                <div className="font-bold text-xl">
-                  {streakCount} Day{streakCount !== 1 ? 's' : ''} Streak
-                </div>
-                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {streakCount === 0 && 'Start your journey today!'}
-                  {streakCount > 0 && streakCount <= 7 && 'Great start! Keep going!'}
-                  {streakCount > 7 && streakCount <= 14 && 'Impressive consistency!'}
-                  {streakCount > 14 && streakCount <= 21 && 'You\'re building a solid habit!'}
-                  {streakCount > 21 && 'Habit master! This is becoming automatic.'}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        // Click animation (scale down)
+        await controls.start({
+          scale: 0.9,
+          transition: { duration: 0.1 }
+        });
         
-        {/* Growth visualization */}
-        <div className={`p-6 border-t ${darkMode ? 'border-gray-800' : 'border-gray-100'}`}>
-          <h4 className="font-medium mb-3">Habit Growth</h4>
-          <div className="h-24 flex items-end justify-between">
-            {Array.from({ length: 30 }).map((_, i) => (
-              <motion.div
-                key={i}
-                className={`w-[2.5%] rounded-t-sm ${
-                  i <= currentDay 
-                    ? 'bg-gradient-to-t from-indigo-500 to-purple-500' 
-                    : darkMode ? 'bg-gray-800' : 'bg-gray-200'
-                }`}
-                style={{ 
-                  height: i <= currentDay 
-                    ? `${Math.min(100, 10 + (i / 30) * 100)}%` 
-                    : '10%'
-                }}
-                animate={{
-                  height: i <= currentDay 
-                    ? `${Math.min(100, 10 + (i / 30) * 100)}%` 
-                    : '10%'
-                }}
-                transition={{ duration: 0.5 }}
-              />
-            ))}
-          </div>
-          <div className="mt-2 flex justify-between text-xs text-gray-500">
-            <span>Day 1</span>
-            <span>Day 15</span>
-            <span>Day 30</span>
-          </div>
-        </div>
+        if (onClick) onClick();
         
-        {/* Achievement unlocked */}
-        {currentDay >= 7 && (
-          <motion.div 
-            className={`p-4 mx-6 mb-6 rounded-xl ${
-              darkMode 
-                ? 'bg-gradient-to-r from-yellow-900/40 to-amber-900/40 border border-yellow-800/40' 
-                : 'bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-100'
-            }`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex items-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-r from-yellow-400 to-amber-500 text-white">
-                <FaTrophy />
-              </div>
-              <div className="ml-4">
-                <div className="font-bold">Achievement Unlocked!</div>
-                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {currentDay >= 7 && currentDay < 14 && 'Week Warrior'}
-                  {currentDay >= 14 && currentDay < 21 && 'Consistency Champion'}
-                  {currentDay >= 21 && currentDay < 28 && 'Habit Hero'}
-                  {currentDay >= 28 && 'Transformation Master'}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </motion.div>
+        // Return to normal size
+        await controls.start({
+          scale: 1,
+          transition: { duration: 0.1 }
+        });
+        
+        // Hide the cursor
+        controls.start({
+          opacity: 0,
+          transition: { duration: 0.5, delay: 0.5 }
+        });
+      };
       
-      {/* Scroll instruction */}
-      <motion.div 
-        className="text-center mt-8"
-        animate={{ 
-          opacity: [0.5, 1, 0.5],
-          y: [0, 10, 0]
-        }}
-        transition={{
-          repeat: Infinity,
-          duration: 2
-        }}
-      >
-        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Keep scrolling to see your progress
-        </p>
-        <svg 
-          className={`w-6 h-6 mx-auto mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
-      </motion.div>
-      
-      {/* Quote that appears at specific scroll points */}
-      <motion.div
-        className="absolute left-1/2 transform -translate-x-1/2 text-center max-w-md"
-        style={{ 
-          top: '50%',
-          opacity: useTransform(scrollYProgress, 
-            [0, 0.3, 0.4, 0.6, 0.7, 1], 
-            [0, 0, 1, 1, 0, 0]
-          ),
-          scale: useTransform(scrollYProgress, 
-            [0, 0.3, 0.4, 0.6, 0.7, 1], 
-            [0.8, 0.8, 1, 1, 0.8, 0.8]
-          ),
-        }}
-      >
-        <blockquote className={`text-xl italic font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-          "We are what we repeatedly do. Excellence, then, is not an act, but a habit."
-          <footer className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>- Aristotle</footer>
-        </blockquote>
-      </motion.div>
-    </div>
-  );
-};
-
-// Update HabitMatrix with type annotation
-const HabitMatrix: React.FC<HabitMatrixProps> = ({ darkMode }) => {
-  // State for rotation and auto-rotation
-  const [rotateX, setRotateX] = useState(15);
-  const [rotateY, setRotateY] = useState(15);
-  const [autoRotate, setAutoRotate] = useState(true);
-  const [hoveredNode, setHoveredNode] = useState<number | null>(null);
-
-  // Handle mouse movement for interactive rotation
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!autoRotate) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      // Calculate rotation based on mouse position
-      const newRotateY = ((e.clientX - centerX) / rect.width) * 40;
-      const newRotateX = ((e.clientY - centerY) / rect.height) * -40;
-      
-      setRotateX(newRotateX);
-      setRotateY(newRotateY);
+      animateCursor();
     }
-  };
+  }, [isActive, targetRef, controls, onClick]);
   
-  // Auto rotate animation
-  useEffect(() => {
-    if (autoRotate) {
-      const interval = setInterval(() => {
-        setRotateY(prev => (prev + 0.2) % 360);
-      }, 50);
-      
-      return () => clearInterval(interval);
-    }
-  }, [autoRotate]);
-  
-  // Matrix nodes - elements of habit building
-  const matrixNodes = [
-    { id: 1, name: "Consistency", description: "Regular repetition creates neural pathways", color: "from-blue-400 to-blue-600", icon: <FaCalendarAlt /> },
-    { id: 2, name: "Motivation", description: "Internal drive to maintain habits", color: "from-pink-400 to-pink-600", icon: <FaFire /> },
-    { id: 3, name: "Awareness", description: "Mindfulness of progress and patterns", color: "from-purple-400 to-purple-600", icon: <FaBrain /> },
-    { id: 4, name: "Tracking", description: "Recording progress strengthens commitment", color: "from-emerald-400 to-emerald-600", icon: <FaChartLine /> },
-    { id: 5, name: "Rewards", description: "Positive reinforcement solidifies habits", color: "from-amber-400 to-amber-600", icon: <FaTrophy /> }
-  ];
-  
-  // Generate additional nodes based on main nodes
-  const allNodes = [
-    ...matrixNodes,
-    { id: 6, name: "Identity", description: "Becoming the type of person who performs the habit", color: "from-indigo-400 to-indigo-600", position: [1, 0, 1] },
-    { id: 7, name: "Environment", description: "Creating a space conducive to your habits", color: "from-teal-400 to-teal-600", position: [0, 1, 1] },
-    { id: 8, name: "Community", description: "Social support reinforces behavior", color: "from-orange-400 to-orange-600", position: [1, 1, 0] }
-  ];
-  
-  // Generate connections between nodes
-  const connections = [
-    { from: 1, to: 2 }, { from: 1, to: 3 }, { from: 1, to: 4 },
-    { from: 2, to: 3 }, { from: 2, to: 5 }, { from: 3, to: 4 },
-    { from: 4, to: 5 }, { from: 5, to: 1 }, { from: 3, to: 6 },
-    { from: 2, to: 7 }, { from: 4, to: 7 }, { from: 5, to: 8 },
-    { from: 6, to: 8 }, { from: 7, to: 8 }
-  ];
-  
-  // Find a node by ID
-  const findNode = (id: number) => allNodes.find(node => node.id === id);
-  
-  return (
-    <div className={`relative min-h-[600px] flex flex-col items-center ${darkMode ? 'bg-gray-900/40 rounded-xl p-6' : ''}`}>
-      {/* Matrix Controls */}
-      <div className="mb-8 flex items-center gap-4">
-        <button
-          onClick={() => setAutoRotate(prev => !prev)}
-          className={`px-4 py-2 rounded-full text-sm ${
-            darkMode 
-              ? autoRotate ? 'bg-indigo-800 text-indigo-100 shadow-glow-indigo' : 'bg-gray-800 text-gray-200 shadow-glow-gray' 
-              : autoRotate ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-700'
-          }`}
-        >
-          {autoRotate ? 'Auto-Rotating' : 'Manual Rotation'}
-        </button>
-        <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
-          {!autoRotate && 'Move your mouse over the matrix to rotate'}
-        </span>
-      </div>
-      
-      {/* 3D Matrix Container */}
-      <div 
-        className={`w-full h-[500px] perspective-1000 flex items-center justify-center ${darkMode ? 'bg-gradient-to-b from-transparent to-gray-900/20 rounded-lg' : ''}`}
-        onMouseMove={handleMouseMove}
-        onClick={() => setAutoRotate(false)}
-      >
-        <motion.div
-          className="relative w-64 h-64 transform-style-3d"
-          style={{
-            rotateX: rotateX,
-            rotateY: rotateY,
-            transformStyle: 'preserve-3d'
-          }}
-          transition={{ type: 'spring', stiffness: 100 }}
-        >
-          {/* Connection lines */}
-          {connections.map((conn, i) => {
-            const fromNode = findNode(conn.from);
-            const toNode = findNode(conn.to);
-            
-            // Skip rendering if nodes aren't found
-            if (!fromNode || !toNode) return null;
-            
-            // Type guard to check if position exists
-            const hasPosition = (node: any): node is { id: number; position: number[] } => {
-              return 'position' in node;
-            };
-            
-            // Calculate positions in 3D space with proper type checking
-            const fromPosition = hasPosition(fromNode) ? fromNode.position : [
-              (fromNode.id % 3) - 1, 
-              Math.floor(fromNode.id / 3) - 1, 
-              ((fromNode.id * 7) % 3) - 1
-            ];
-            
-            const toPosition = hasPosition(toNode) ? toNode.position : [
-              (toNode.id % 3) - 1, 
-              Math.floor(toNode.id / 3) - 1, 
-              ((toNode.id * 7) % 3) - 1
-            ];
-            
-            // Calculate midpoint
-            const midPoint = [
-              (fromPosition[0] + toPosition[0]) / 2,
-              (fromPosition[1] + toPosition[1]) / 2,
-              (fromPosition[2] + toPosition[2]) / 2
-            ];
-            
-            // Calculate length and angles
-            const dx = toPosition[0] - fromPosition[0];
-            const dy = toPosition[1] - fromPosition[1];
-            const dz = toPosition[2] - fromPosition[2];
-            
-            const length = Math.sqrt(dx*dx + dy*dy + dz*dz) * 100; // scale up
-            
-            // Connection highlight states
-            const isHighlighted = hoveredNode && 
-              (hoveredNode === conn.from || hoveredNode === conn.to);
+  if (!isActive) return null;
             
             return (
               <motion.div
-                key={`conn-${i}`}
-                className={`absolute w-1 origin-left rounded-full transform-style-3d ${
-                  isHighlighted 
-                    ? 'bg-gradient-to-r from-indigo-400 to-purple-500'
-                    : darkMode ? 'bg-indigo-600/40' : 'bg-gray-300'
-                }`}
+      ref={cursorRef}
+      className="fixed z-50 pointer-events-none"
                 style={{
-                  opacity: isHighlighted ? 0.9 : darkMode ? 0.5 : 0.3,
-                  height: 2,
-                  width: length,
-                  left: (fromPosition[0] * 100) + 132,
-                  top: (fromPosition[1] * 100) + 132,
-                  transformStyle: 'preserve-3d',
-                  transform: `translateZ(${fromPosition[2] * 100}px) rotateZ(${Math.atan2(dy, dx) * (180/Math.PI)}deg) rotateY(${Math.atan2(dz, Math.sqrt(dx*dx + dy*dy)) * (180/Math.PI)}deg)`,
-                  boxShadow: isHighlighted ? (darkMode ? '0 0 12px rgba(129, 140, 248, 0.9)' : '0 0 8px rgba(129, 140, 248, 0.8)') : 'none'
-                }}
-                animate={{
-                  opacity: isHighlighted ? [0.7, 1, 0.7] : darkMode ? 0.5 : 0.3
-                }}
-                transition={{
-                  repeat: isHighlighted ? Infinity : 0,
-                  duration: 1.5
-                }}
-              />
-            );
-          })}
-          
-          {/* Nodes */}
-          {allNodes.map((node) => {
-            // Type guard to check if position exists
-            const hasPosition = (n: any): n is { id: number; position: number[] } => {
-              return 'position' in n;
-            };
-            
-            // Type guard to check if icon exists
-            const hasIcon = (n: any): n is { id: number; icon: React.ReactNode } => {
-              return 'icon' in n;
-            };
-            
-            // Calculate 3D position with proper type checking
-            const position = hasPosition(node) ? node.position : [
-              (node.id % 3) - 1, 
-              Math.floor(node.id / 3) - 1, 
-              ((node.id * 7) % 3) - 1
-            ];
-            
-            const isHovered = hoveredNode === node.id;
-            
-            return (
-              <motion.div
-                key={`node-${node.id}`}
-                className={`absolute w-16 h-16 rounded-full bg-gradient-to-br ${node.color} flex items-center justify-center cursor-pointer transform-style-3d`}
-                style={{
-                  left: (position[0] * 100) + 124,
-                  top: (position[1] * 100) + 124,
-                  transform: `translateZ(${position[2] * 100}px)`,
-                  boxShadow: darkMode 
-                    ? isHovered ? '0 0 30px rgba(100, 100, 255, 0.7)' : '0 0 20px rgba(0, 0, 30, 0.8)' 
-                    : isHovered ? '0 0 30px rgba(100, 100, 255, 0.4)' : '0 0 20px rgba(0, 0, 0, 0.2)',
-                  transformStyle: 'preserve-3d'
-                }}
-                animate={{
-                  scale: isHovered ? 1.2 : 1,
-                  boxShadow: isHovered 
-                    ? darkMode ? '0 0 30px rgba(100, 100, 255, 0.7)' : '0 0 30px rgba(100, 100, 255, 0.4)'
-                    : darkMode ? '0 0 20px rgba(0, 0, 30, 0.8)' : '0 0 20px rgba(0, 0, 0, 0.2)'
-                }}
-                onMouseEnter={() => setHoveredNode(node.id)}
-                onMouseLeave={() => setHoveredNode(null)}
-                whileHover={{ z: 30 }}
-              >
-                {hasIcon(node) && (
-                  <div className="text-white text-xl">
-                    {node.icon}
-                  </div>
-                )}
-                
-                {/* Node description on hover */}
-                {isHovered && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`absolute top-full mt-4 left-1/2 -translate-x-1/2 w-48 p-3 rounded-lg shadow-xl z-10 ${
-                      darkMode 
-                        ? 'bg-gray-800 border border-gray-700 text-white' 
-                        : 'bg-white text-gray-800'
-                    }`}
-                    style={{
-                      transformStyle: 'preserve-3d',
-                      transform: 'translateZ(100px)',
-                      boxShadow: darkMode ? '0 10px 25px -5px rgba(0, 0, 0, 0.8)' : '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
-                    }}
-                  >
-                    <h4 className="font-bold text-sm mb-1">{node.name}</h4>
-                    <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{node.description}</p>
-                  </motion.div>
-                )}
+        left: 0,
+        top: 0,
+        x: position.x,
+        y: position.y
+      }}
+      animate={controls}
+      initial={{ opacity: 1, scale: 1 }}
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path 
+          d="M5 1L18 14L12 15L14 21L10 23L8 15L2 13L5 1Z" 
+          fill="white" 
+          stroke="#FF9D76" 
+          strokeWidth="1.5"
+        />
+      </svg>
               </motion.div>
-            );
-          })}
-        </motion.div>
-      </div>
-    </div>
   );
 };
 
-// Add the missing HabitSimulator component
+// Modify the HabitSimulator component to use the local borderColor variable
 const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
-  // Simulation parameters with default values
-  const [params, setParams] = useState({
-    consistency: 70,  // 0-100
-    cue: 60,          // 0-100
-    difficulty: 40,   // 0-100
-    reward: 65,       // 0-100
-    environment: 75   // 0-100
-  });
+  // Get borderColor from variables available in parent component scope
+  const borderColor = darkMode ? 'border-gray-700' : 'border-slate-200/60';
   
+  // Add ref for the entire simulator container
+  const simulatorRef = useRef<HTMLDivElement>(null);
+  
+  // Add ref for the start simulation button
+  const startButtonRef = useRef<HTMLButtonElement>(null);
+  const [showCursorAnimation, setShowCursorAnimation] = useState(false);
+  
+  // Move state declarations here, before the useEffect
   const [simulationRunning, setSimulationRunning] = useState(false);
   const [day, setDay] = useState(0);
   const [simulationStats, setSimulationStats] = useState({
@@ -1313,6 +1330,49 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
       habitStrength: string;
     }>
   });
+  
+  // Simulation parameters with default values
+  const [params, setParams] = useState({
+    consistency: 70,  // 0-100
+    cue: 60,          // 0-100
+    difficulty: 40,   // 0-100
+    reward: 65,       // 0-100
+    environment: 75   // 0-100
+  });
+
+  // Use Intersection Observer to trigger animation when section is in view
+  useEffect(() => {
+    if (!simulatorRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          // If simulator is in view and animation hasn't started yet
+          if (entry.isIntersecting && !showCursorAnimation && !simulationRunning) {
+            // Wait a moment after scrolling into view before showing animation
+            setTimeout(() => {
+              setShowCursorAnimation(true);
+            }, 500); // Reduced from 1500ms to 500ms for quicker response
+          }
+        });
+      },
+      {
+        root: null, // Use viewport as root
+        rootMargin: '0px',
+        threshold: 0.5 // Trigger when at least 50% of element is visible
+      }
+    );
+
+    observer.observe(simulatorRef.current);
+    
+    return () => {
+      if (simulatorRef.current) {
+        observer.unobserve(simulatorRef.current);
+      }
+    };
+  }, [simulatorRef, showCursorAnimation, simulationRunning]);
+  
+  // Remove the state declarations that were moved above
   
   // Get reference to parent component's handleDemo function
   const showLoginModal = () => {
@@ -1447,13 +1507,23 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
   };
   
   return (
-    <div className={`rounded-xl overflow-hidden ${
-      darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
-    } shadow-xl`}>
+    <div 
+      ref={simulatorRef}
+      className={`rounded-xl overflow-hidden shadow-xl border ${borderColor} ${
+        darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white'
+      }`}
+    >
+      {/* Add cursor animation */}
+      <CursorAnimation 
+        targetRef={startButtonRef} 
+        isActive={showCursorAnimation && !simulationRunning} 
+        onClick={startSimulation}
+      />
+      
       {/* Header */}
-      <div className={`p-6 border-b ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+      <div className={`p-6 border-b ${darkMode ? 'border-gray-800' : 'border-slate-200/60'}`}>
         <h3 className="text-xl font-bold">Habit Formation Simulator</h3>
-        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
           Adjust the parameters and see how they affect habit success over 30 days
         </p>
       </div>
@@ -1467,10 +1537,10 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
           {Object.keys(params).map(param => (
             <div key={param} className="space-y-2">
               <div className="flex justify-between">
-                <label className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <label className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-slate-700'}`}>
                   {paramLabels[param as keyof typeof paramLabels]}
                 </label>
-                <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
                   {params[param as keyof typeof params]}%
                 </span>
               </div>
@@ -1482,16 +1552,16 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
                 value={params[param as keyof typeof params]}
                 onChange={(e) => handleParamChange(param, e.target.value)}
                 className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${
-                  darkMode ? 'bg-gray-700' : 'bg-gray-200'
+                  darkMode ? 'bg-gray-700' : 'bg-slate-200'
                 }`}
                 style={{
                   accentColor: param === 'difficulty' ? 
-                    (darkMode ? '#f87171' : '#ef4444') : 
-                    (darkMode ? '#818cf8' : '#6366f1')
+                    (darkMode ? '#f87171' : '#FF9D76') : 
+                    (darkMode ? '#818cf8' : '#FF9D76')
                 }}
               />
               
-              <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+              <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-slate-500'}`}>
                 {paramDescriptions[param as keyof typeof paramDescriptions]}
               </p>
             </div>
@@ -1500,14 +1570,18 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
           {/* Simulation Controls */}
           <div className="flex space-x-3 pt-4">
             <button
-              onClick={startSimulation}
+              ref={startButtonRef}
+              onClick={() => {
+                setShowCursorAnimation(false);
+                startSimulation();
+              }}
               disabled={simulationRunning}
               className={`px-4 py-2 rounded-lg ${
                 simulationRunning 
                   ? darkMode ? 'bg-gray-800 text-gray-500' : 'bg-gray-200 text-gray-400'
                   : darkMode 
                     ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-                    : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+                    : 'bg-[#FF9D76] hover:bg-[#FF8A5B] text-white'
               } transition-colors flex-1`}
             >
               {simulationRunning ? 'Simulating...' : 'Start Simulation'}
@@ -1533,14 +1607,14 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
           {/* Progress Bar */}
           <div className="mb-6">
             <div className="flex justify-between text-sm mb-1">
-              <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Day {day} of 30</span>
-              <span className={simulationRunning ? 'text-indigo-500 animate-pulse' : 'text-gray-500'}>
+              <span className={darkMode ? 'text-gray-400' : 'text-slate-600'}>Day {day} of 30</span>
+              <span className={simulationRunning ? 'text-[#FF9D76] animate-pulse' : 'text-gray-500'}>
                 {simulationRunning ? 'Running...' : day > 0 ? 'Completed' : 'Not started'}
               </span>
             </div>
-            <div className={`h-2 rounded-full overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
+            <div className={`h-2 rounded-full overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-slate-200'}`}>
               <motion.div 
-                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                className={`h-full bg-gradient-to-r ${darkMode ? 'from-indigo-500 to-purple-500' : 'from-[#FF9D76] to-[#FFDBCB]'}`}
                 style={{ width: `${(day / 30) * 100}%` }}
                 animate={simulationRunning ? { opacity: [0.7, 1, 0.7] } : {}}
                 transition={{ repeat: Infinity, duration: 1.5 }}
@@ -1549,63 +1623,63 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
           </div>
           
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
             {/* Streak Length */}
             <div className={`p-4 rounded-lg ${
-              darkMode ? 'bg-gray-800' : 'bg-gray-50'
+              darkMode ? 'bg-gray-800' : 'bg-slate-50'
             }`}>
-              <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
                 Current Streak
               </div>
               <div className="flex items-baseline">
                 <span className="text-2xl font-bold mr-1">{simulationStats.streakLength}</span>
-                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>days</span>
+                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-slate-600'}`}>days</span>
               </div>
             </div>
             
             {/* Success Rate */}
             <div className={`p-4 rounded-lg ${
-              darkMode ? 'bg-gray-800' : 'bg-gray-50'
+              darkMode ? 'bg-gray-800' : 'bg-slate-50'
             }`}>
-              <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
                 Success Rate
               </div>
               <div className="flex items-baseline">
                 <span className="text-2xl font-bold mr-1">{simulationStats.successRate.toFixed(1)}</span>
-                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>%</span>
+                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-slate-600'}`}>%</span>
               </div>
             </div>
             
             {/* Completions */}
             <div className={`p-4 rounded-lg ${
-              darkMode ? 'bg-gray-800' : 'bg-gray-50'
+              darkMode ? 'bg-gray-800' : 'bg-slate-50'
             }`}>
-              <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
                 Days Completed
               </div>
               <div className="flex items-baseline">
                 <span className="text-2xl font-bold mr-1">{simulationStats.completed}</span>
-                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>/ {day}</span>
+                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-slate-600'}`}>/ {day}</span>
               </div>
             </div>
             
             {/* Habit Strength */}
             <div className={`p-4 rounded-lg ${
-              darkMode ? 'bg-gray-800' : 'bg-gray-50'
+              darkMode ? 'bg-gray-800' : 'bg-slate-50'
             }`}>
-              <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
                 Habit Strength
               </div>
               <div className="flex items-baseline">
-                <span className="text-2xl font-bold mr-1">{simulationStats.habitStrength}</span>
-                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>/ 100</span>
+                <span className="text-2xl font-bold mr-1">{simulationStats.habitStrength.toFixed(1)}</span>
+                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-slate-600'}`}>/ 100</span>
               </div>
             </div>
           </div>
           
           {/* Habit Timeline */}
-          <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-            <div className={`p-3 ${darkMode ? 'border-b border-gray-700' : 'border-b border-gray-200'}`}>
+          <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-slate-50'}`}>
+            <div className={`p-3 ${darkMode ? 'border-b border-gray-700' : 'border-b border-slate-200'}`}>
               <h5 className="font-medium text-sm">Habit Timeline</h5>
             </div>
             
@@ -1615,7 +1689,7 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
                   <div 
                     key={i} 
                     className={`text-center text-xs flex-shrink-0 w-8 ${
-                      darkMode ? 'text-gray-500' : 'text-gray-600'
+                      darkMode ? 'text-gray-500' : 'text-slate-600'
                     }`}
                   >
                     {i + 1}
@@ -1636,7 +1710,7 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
                   >
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
                       log.completed 
-                        ? darkMode ? 'bg-green-800/50 text-green-400' : 'bg-green-100 text-green-600'
+                        ? darkMode ? 'bg-green-800/50 text-green-400' : 'bg-[#FFF0E8] text-[#FF9D76]'
                         : darkMode ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-500'
                     }`}>
                       {log.completed ? '✓' : '✕'}
@@ -1653,12 +1727,12 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
                     <div
                       key={level}
                       className={`absolute left-0 right-0 h-px ${
-                        darkMode ? 'bg-gray-700' : 'bg-gray-300'
+                        darkMode ? 'bg-gray-700' : 'bg-slate-300'
                       }`}
                       style={{ top: `${100 - level}%` }}
                     >
                       <span className={`absolute -left-6 -translate-y-1/2 text-xs ${
-                        darkMode ? 'text-gray-500' : 'text-gray-500'
+                        darkMode ? 'text-gray-500' : 'text-slate-500'
                       }`}>
                         {level}%
                       </span>
@@ -1669,8 +1743,8 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
                   <svg className="absolute inset-0 h-full w-full">
                     <defs>
                       <linearGradient id="strength-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor={darkMode ? '#818cf8' : '#6366f1'} />
-                        <stop offset="100%" stopColor={darkMode ? '#d946ef' : '#c026d3'} />
+                        <stop offset="0%" stopColor={darkMode ? '#818cf8' : '#FF9D76'} />
+                        <stop offset="100%" stopColor={darkMode ? '#d946ef' : '#FFDBCB'} />
                       </linearGradient>
                     </defs>
                     <polyline
@@ -1696,10 +1770,10 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
         <motion.div 
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className={`p-6 border-t ${darkMode ? 'border-gray-800 bg-indigo-900/10' : 'border-gray-200 bg-indigo-50'}`}
+          className={`p-6 border-t ${darkMode ? 'border-gray-800 bg-indigo-900/10' : 'border-slate-200 bg-[#FFF0E8]/30'}`}
         >
           <h4 className="font-bold mb-2">Simulation Insights</h4>
-          <p className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
+          <p className={darkMode ? 'text-gray-300' : 'text-slate-700'}>
             {Number(simulationStats.successRate) > 80 
               ? "Excellent habit design! You've created a sustainable habit system."
               : Number(simulationStats.successRate) > 60
@@ -1714,7 +1788,7 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
             {params.consistency < 50 && (
               <div className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="font-medium">Boost Consistency</div>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
                   Schedule your habit at the same time each day to build momentum.
                 </p>
               </div>
@@ -1723,7 +1797,7 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
             {params.cue < 50 && (
               <div className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="font-medium">Strengthen Cues</div>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
                   Create obvious triggers that remind you to perform your habit.
                 </p>
               </div>
@@ -1732,7 +1806,7 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
             {params.difficulty > 60 && (
               <div className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="font-medium">Reduce Difficulty</div>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
                   Make your habit so small and easy it feels almost too simple.
                 </p>
               </div>
@@ -1741,7 +1815,7 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
             {params.reward < 50 && (
               <div className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="font-medium">Enhance Rewards</div>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
                   Create immediate satisfaction after completing your habit.
                 </p>
               </div>
@@ -1750,7 +1824,7 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
             {params.environment < 50 && (
               <div className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="font-medium">Design Your Environment</div>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
                   Make good habits obvious and bad habits invisible in your space.
                 </p>
               </div>
@@ -1763,7 +1837,7 @@ const HabitSimulator: React.FC<HabitSimulatorProps> = ({ darkMode }) => {
               className={`px-6 py-3 rounded-lg font-medium text-white ${
                 darkMode 
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700' 
-                  : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600'
+                  : 'bg-gradient-to-r from-[#FF9D76] to-[#FFBEA7] hover:from-[#FF8A5B] hover:to-[#FFA584]'
               } transition-all shadow-lg hover:shadow-xl`}
             >
               Try StreakQuest Demo

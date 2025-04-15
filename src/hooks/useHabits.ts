@@ -225,10 +225,15 @@ export const useHabits = () => {
   }, []);
 
   // Handle opening the edit habit form
-  const openEditHabitForm = useCallback((habit: Habit) => {
-    setEditingHabit(habit);
-    setShowHabitForm(true);
-  }, []);
+  const openEditHabitForm = useCallback((habitId: string) => {
+    const habitToEdit = habits.find(h => h.id === habitId);
+    if (habitToEdit) {
+      setEditingHabit(habitToEdit);
+      setShowHabitForm(true);
+    } else {
+      toast.error('Could not find habit to edit');
+    }
+  }, [habits]);
 
   // Handle closing the habit form
   const closeHabitForm = useCallback(() => {

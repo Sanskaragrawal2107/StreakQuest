@@ -14,6 +14,8 @@ interface HabitCardProps {
   progress: number;
   completed?: boolean;
   lastCompleted?: Date;
+  icon?: string;
+  unit?: string;
   onComplete: (id: string) => any;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
@@ -33,6 +35,8 @@ const HabitCard: React.FC<HabitCardProps> = ({
   progress,
   completed,
   lastCompleted,
+  icon,
+  unit,
   onComplete,
   onEdit,
   onDelete,
@@ -226,9 +230,11 @@ const HabitCard: React.FC<HabitCardProps> = ({
             <h3
               className={`font-medium ${
                 darkMode ? 'text-gray-200' : 'text-gray-800'
-              }`}
+              } flex items-center`}
             >
+              {icon && <span className="mr-2">{icon}</span>}
               {name}
+              {unit && <span className={`ml-2 text-xs opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>({unit})</span>}
             </h3>
             <div className="flex items-center flex-wrap mt-1 gap-2">
               <span

@@ -6,6 +6,7 @@ interface ProgressRingProps {
   size?: number;
   strokeWidth?: number;
   color?: string;
+  progressColor?: string; // Alias for color
   bgColor?: string;
   className?: string;
   showPercentage?: boolean;
@@ -17,11 +18,15 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
   size = 80,
   strokeWidth = 6,
   color = 'var(--primary-500, #3b82f6)',
+  progressColor,
   bgColor = 'var(--neutral-100, #f1f5f9)',
   className = '',
   showPercentage = true,
   children,
 }) => {
+  // Use progressColor as an alias for color if provided
+  const strokeColor = progressColor || color;
+  
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progressOffset = circumference - (progress / 100) * circumference;
@@ -45,7 +50,7 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={color}
+          stroke={strokeColor}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}

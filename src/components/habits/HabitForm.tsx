@@ -5,6 +5,7 @@ import {
   FaWater, FaLeaf, FaRegCheckCircle 
 } from 'react-icons/fa';
 import { useTheme } from '../../contexts/ThemeContext';
+import { Habit } from '../../utils/localStorage';
 
 interface HabitFormProps {
   initialData?: {
@@ -17,6 +18,8 @@ interface HabitFormProps {
     color: 'primary' | 'secondary' | 'accent';
     goal: number;
   };
+  editingHabit?: Habit | null;
+  darkMode?: boolean;
   onClose: () => void;
   onSubmit: (data: any) => void;
 }
@@ -69,10 +72,15 @@ interface FormValues {
 
 const HabitForm: React.FC<HabitFormProps> = ({
   initialData,
+  editingHabit,
+  darkMode: propDarkMode,
   onClose,
   onSubmit,
 }) => {
-  const { darkMode } = useTheme();
+  // Use the prop darkMode if provided, otherwise use context
+  const { darkMode: themeDarkMode } = useTheme();
+  const darkMode = propDarkMode !== undefined ? propDarkMode : themeDarkMode;
+  
   const [formValues, setFormValues] = useState<FormValues>({
     name: initialData?.name || '',
     category: initialData?.category || 'Health',

@@ -63,18 +63,18 @@ const Stats: React.FC<{}> = () => {
       text: darkMode ? '#f1f5f9' : '#1e293b',
       textSecondary: darkMode ? '#cbd5e1' : '#64748b',
       background: darkMode ? '#0f172a' : '#ffffff',
-      backgroundSecondary: darkMode ? '#1e293b' : '#f8fafc',
+      backgroundSecondary: darkMode ? '#1e293b' : '#eef2ff',
       cardBg: darkMode ? '#1e293b' : '#ffffff',
-      border: darkMode ? '#334155' : '#e2e8f0',
+      border: darkMode ? '#334155' : '#cbd5e1',
       indigo: {
         primary: darkMode ? 'rgb(129, 140, 248)' : 'rgb(79, 70, 229)', // Lighter in dark mode
         light: darkMode ? 'rgba(129, 140, 248, 0.3)' : 'rgba(79, 70, 229, 0.15)',
         bg: darkMode ? '#312e81' : '#eef2ff',
       },
       emerald: {
-        primary: darkMode ? 'rgb(52, 211, 153)' : 'rgb(16, 185, 129)',
-        light: darkMode ? 'rgba(52, 211, 153, 0.3)' : 'rgba(16, 185, 129, 0.15)',
-        bg: darkMode ? '#065f46' : '#ecfdf5',
+        primary: darkMode ? 'rgb(52, 211, 153)' : 'rgb(14, 165, 233)',
+        light: darkMode ? 'rgba(52, 211, 153, 0.3)' : 'rgba(14, 165, 233, 0.15)',
+        bg: darkMode ? '#065f46' : '#f0f9ff',
       },
       fuchsia: {
         primary: darkMode ? 'rgb(232, 121, 249)' : 'rgb(217, 70, 239)', // Lighter in dark mode
@@ -86,7 +86,7 @@ const Stats: React.FC<{}> = () => {
         light: 'rgba(250, 204, 21, 0.3)',
         bg: darkMode ? '#854d0e' : '#fef9c3',
       },
-      grid: darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.5)',
+      grid: darkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.5)',
       tooltipBg: darkMode ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
       tooltipBorder: darkMode ? '#334155' : 'rgba(203, 213, 225, 1)',
     };
@@ -193,7 +193,7 @@ const Stats: React.FC<{}> = () => {
         data: [],
         backgroundColor: [
           'rgba(79, 70, 229, 0.8)',    // Indigo (primary)
-          'rgba(52, 211, 153, 0.8)',   // Emerald (secondary)
+          'rgba(14, 165, 233, 0.8)',   // Sky blue (secondary)
           'rgba(217, 70, 239, 0.8)',   // Fuchsia (accent)
           'rgba(251, 146, 60, 0.8)',   // Orange
           'rgba(99, 102, 241, 0.8)',   // Indigo-blue
@@ -243,14 +243,14 @@ const Stats: React.FC<{}> = () => {
       datasets: [
         {
           ...prevData.datasets[0],
-          backgroundColor: darkMode ? '#4ade80' : '#10b981',
+          backgroundColor: darkMode ? '#22c55e' : '#10b981',
           borderColor: darkMode ? '#34d399' : '#059669',
           data: completionData.completions,
         },
         {
           ...prevData.datasets[1],
-          backgroundColor: darkMode ? 'rgba(250, 204, 21, 0.8)' : 'rgba(234, 179, 8, 0.8)',
-          borderColor: darkMode ? 'rgba(250, 204, 21, 1)' : 'rgba(202, 138, 4, 1)',
+          backgroundColor: darkMode ? 'rgba(250, 204, 21, 0.8)' : 'rgba(79, 70, 229, 0.8)',
+          borderColor: darkMode ? 'rgba(250, 204, 21, 1)' : 'rgba(79, 70, 229, 1)',
           data: completionData.partialCompletions,
         },
         {
@@ -268,7 +268,7 @@ const Stats: React.FC<{}> = () => {
         data: categoryData.values,
         backgroundColor: [
           'rgba(79, 70, 229, 0.8)',    // Indigo (primary)
-          'rgba(52, 211, 153, 0.8)',   // Emerald (secondary)
+          'rgba(14, 165, 233, 0.8)',   // Sky blue (secondary)
           'rgba(217, 70, 239, 0.8)',   // Fuchsia (accent)
           'rgba(251, 146, 60, 0.8)',   // Orange
           'rgba(99, 102, 241, 0.8)',   // Indigo-blue
@@ -653,7 +653,9 @@ const Stats: React.FC<{}> = () => {
       datasets: [
         {
           ...prevData.datasets[0], // Fully Completed (order 1)
-          data: newCompletionData.completions
+          data: newCompletionData.completions,
+          backgroundColor: darkMode ? '#22c55e' : '#10b981', // Match the green color
+          borderColor: darkMode ? '#34d399' : '#059669', // Match the border color
         },
         {
           ...prevData.datasets[1], // Partially Completed (order 2)
@@ -691,7 +693,7 @@ const Stats: React.FC<{}> = () => {
       </div>
       <div className="flex items-center mx-2 my-1">
         <div className={`w-5 h-5 rounded mr-2 ${
-          darkMode ? 'bg-[rgba(250,204,21,0.8)] border border-[rgba(250,204,21,1)]' : 'bg-[rgba(234,179,8,0.8)]'
+          darkMode ? 'bg-[rgba(250,204,21,0.8)] border border-[rgba(250,204,21,1)]' : 'bg-[rgba(79,70,229,0.8)]'
         }`}></div>
         <span className={`text-sm ${darkMode ? 'text-white font-medium' : 'text-neutral-600'}`}>Partially Completed</span>
       </div>

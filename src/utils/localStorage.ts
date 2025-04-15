@@ -14,6 +14,8 @@ export interface Habit {
   progress: number;
   lastCompleted?: string;
   completionHistory: Record<string, number>; // Changed from boolean to number for multiple completions
+  icon?: string; // Optional icon for the habit
+  unit?: string; // Optional unit of measurement (e.g., "minutes", "pages")
 }
 
 export interface Achievement {

@@ -7,35 +7,42 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Function to get initial dark mode state synchronously
+const getInitialDarkMode = (): boolean => {
+  // Check if running in a browser environment
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return false; // Default to light mode for SSR or if localStorage is unavailable
+  }
+  
+  const savedPreference = localStorage.getItem('streakquest-dark-mode');
+  if (savedPreference) {
+    return savedPreference === 'true';
+  }
+  // Default to light mode if no preference is saved
+  return false; 
+};
+
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  // Initialize state using the synchronous function
+  const [darkMode, setDarkMode] = useState<boolean>(getInitialDarkMode());
 
-  // Check for user's preferred color scheme on component mount
+  // Apply dark mode class to html element when darkMode state changes
   useEffect(() => {
-    // Check if user has a saved preference
-    const savedPreference = localStorage.getItem('streakquest-dark-mode');
-    if (savedPreference) {
-      setDarkMode(savedPreference === 'true');
-    } else {
-      // Otherwise check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setDarkMode(prefersDark);
-    }
-  }, []);
-
-  // Apply dark mode to html element
-  useEffect(() => {
+    const root = document.documentElement;
     if (darkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
     }
   }, [darkMode]);
 
-  // Toggle dark mode and save preference
+  // Toggle dark mode and save preference to localStorage
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    localStorage.setItem('streakquest-dark-mode', (!darkMode).toString());
+    setDarkMode(prevMode => {
+      const newMode = !prevMode;
+      localStorage.setItem('streakquest-dark-mode', newMode.toString());
+      return newMode;
+    });
   };
 
   return (

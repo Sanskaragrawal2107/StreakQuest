@@ -54,7 +54,7 @@ const AppContent: React.FC = () => {
             <div className={`flex-1 transition-colors duration-300 ${ 
               darkMode 
                 ? 'bg-gray-900 text-gray-100' 
-                : 'bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 text-gray-900'
+                : 'bg-gradient-to-br from-[#FFF8F4] via-[#FFF0E8] to-[#FFF5ED] text-gray-900'
             }`}>
               <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 md:px-8">
                 <MobileNav />
